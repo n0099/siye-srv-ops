@@ -1,0 +1,24 @@
+services:
+  cron:
+    extends:
+      file: compose.yaml
+      service: common
+    depends_on:
+      - php-fpm
+    build:
+      dockerfile_inline: |
+        # syntax=docker/dockerfile:1
+        FROM php-fpm
+
+        # https://stackoverflow.com/questions/37458287/how-to-run-a-cron-job-inside-a-docker-container
+        RUN apt-get update && apt-get install -y cron && which cron && rm -rf /etc/cron.*/*
+        COPY <<CRON /etc/crontab
+          # https://stackoverflow.com/questions/2388087/how-to-get-cron-to-call-in-the-correct-paths
+          PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+          # https://gist.github.com/x-yuri/336fd3185de7e168023867302d5ac99b
+          # https://askubuntu.com/questions/307534/unable-to-su-with-root-bin-bash-permission-denied
+          * * * * * root su www-data -s /bin/sh -c 'php $WEB_ROOT/flarum schedule:run' >/proc/1/fd/1 2>/proc/1/fd/2
+        CRON
+
+        # https://github.com/AnalogJ/docker-cron/blob/master/debian.dockerfile
+        ENTRYPOINT ["cron", "-f", "-L", "2"]

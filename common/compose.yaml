@@ -1,0 +1,11 @@
+services:
+  common:
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    environment:
+      PHP_INI_OPEN_BASEDIR: /tmp:$WEB_ROOT
+    volumes:
+      - type: bind
+        source: $WEB_ROOT
+        target: $WEB_ROOT
+    pull_policy: build
