@@ -1,0 +1,57 @@
+x-service-attributes: &service-attributes
+  extra_hosts:
+    - host.docker.internal:host-gateway
+  environment:
+    PHP_INI_OPEN_BASEDIR: /home/www/s8c:/tmp
+  volumes:
+    - type: bind
+      source: /home/www/s8c
+      target: /home/www/s8c
+  pull_policy: build
+
+services:
+  common-php-fpm:
+    image: common-php-fpm
+    build: # https://stackoverflow.com/questions/48874739/build-docker-image-that-depends-on-a-local-dockerfile/79166897#79166897
+      context: ../common
+      dockerfile: php-fpm.Dockerfile
+    entrypoint: [sh, -c, exit]
+    pull_policy: build
+  php-fpm:
+    <<: *service-attributes
+    depends_on:
+      - common-php-fpm
+    image: php-fpm
+    build:
+      dockerfile_inline: |
+        # syntax=docker/dockerfile:1
+        FROM common-php-fpm
+
+        ADD --chmod=0755 https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
+        RUN <<BASH
+          install-php-extensions pdo_mysql
+          # for smtp: https://stackoverflow.com/questions/64146145/how-to-alias-a-dns-name-to-host-docker-internal-inside-a-docker-container
+          echo 'echo "$(getent hosts host.docker.internal | awk '"'"'{ print $1 }'"'"')" localhost.n0099.net >> /etc/hosts' >> /etc/rc.local
+        BASH
+    ports:
+      - 9003:9000
+  cron:
+    <<: *service-attributes
+    depends_on:
+      - php-fpm
+    build:
+      dockerfile_inline: |
+        # syntax=docker/dockerfile:1
+        FROM php-fpm
+
+        # https://stackoverflow.com/questions/37458287/how-to-run-a-cron-job-inside-a-docker-container
+        RUN apt-get update && apt-get install -y cron && which cron && rm -rf /etc/cron.*/*
+        COPY <<CRON /etc/crontab
+          # https://stackoverflow.com/questions/2388087/how-to-get-cron-to-call-in-the-correct-paths
+          PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+          # https://gist.github.com/x-yuri/336fd3185de7e168023867302d5ac99b
+          * * * * * root su www-data -s /bin/sh -c 'php /home/www/s8c/flarum schedule:run' >/proc/1/fd/1 2>/proc/1/fd/2
+        CRON
+
+        # https://github.com/AnalogJ/docker-cron/blob/master/debian.dockerfile
+        ENTRYPOINT ["cron", "-f", "-L", "2"]
