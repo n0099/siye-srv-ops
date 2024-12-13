@@ -1,0 +1,10 @@
+services:
+  sonic:
+    image: valeriansaliou/sonic:v1.4.9
+    volumes:
+      - type: bind
+        source: $SONIC_STORE
+        target: /var/lib/sonic/store
+      - type: bind
+        source: $SONIC_CONFIG
+        target: /etc/sonic.cfg

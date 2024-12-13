@@ -14,9 +14,9 @@ upload_max_filesize = 16M
 allow_url_fopen = Off
 
 [opcache]
-opcache.jit = tracing
+opcache.enable_cli = 1
 opcache.jit_buffer_size = 128M
-opcache.max_accelerated_files = 65407
+opcache.max_accelerated_files = 65536
 opcache.file_cache = /tmp/opcache
 INI
 

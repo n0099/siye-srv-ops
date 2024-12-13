@@ -1,0 +1,11 @@
+services:
+  redis:
+    image: redis:7.4.1
+  flarum-queue:
+    extends:
+      file: ../common/compose.yaml
+      service: common
+    depends_on:
+      - php-fpm
+    image: php-fpm
+    entrypoint: [php, -d, disable_functions, $WEB_ROOT/flarum, queue:work]
