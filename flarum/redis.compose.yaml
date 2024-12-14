@@ -3,7 +3,7 @@ services:
     image: redis:7.4.1
   queue:
     extends:
-      file: ../common/compose.yaml
+      file: ../common.compose.yaml
       service: common
     depends_on:
       - php-fpm

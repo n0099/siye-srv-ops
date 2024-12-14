@@ -1,21 +1,21 @@
 services:
-  common-php-fpm:
-    image: common-php-fpm
+  php-fpm-base:
+    image: php-fpm-base
     build: # https://stackoverflow.com/questions/48874739/build-docker-image-that-depends-on-a-local-dockerfile/79166897#79166897
-      dockerfile: php-fpm.Dockerfile
+      dockerfile: Dockerfile
     entrypoint: sh -c exit
     pull_policy: build
   php-fpm:
     extends:
-      file: compose.yaml
+      file: ../common.compose.yaml
       service: common
     depends_on:
-      - common-php-fpm
+      - php-fpm-base
     image: php-fpm
     build:
       dockerfile_inline: |
         # syntax=docker/dockerfile:1
-        FROM common-php-fpm
+        FROM php-fpm-base
 
         ADD --chmod=0755 https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
         RUN install-php-extensions $PHP_EXTENSIONS
