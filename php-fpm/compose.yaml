@@ -17,7 +17,9 @@ services:
         # syntax=docker/dockerfile:1
         FROM php-fpm-base
 
-        ADD --chmod=0755 https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
+        ADD --chmod=0755 \
+          https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions \
+          /usr/local/bin
         RUN install-php-extensions $PHP_EXTENSIONS
     # https://github.com/docker-library/php/blob/6b636b96c06be449514a5033037bf653d8a86967/8.3/bullseye/fpm/Dockerfile#L275
     command: php-fpm
