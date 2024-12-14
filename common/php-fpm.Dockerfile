@@ -28,5 +28,5 @@ sed -e 's#^open_basedir =#& '"$(printenv PHP_INI_OPEN_BASEDIR | sed -e 's/[#\&]/
 BASH
 RUN chmod +x /etc/rc.local
 # https://stackoverflow.com/questions/47615751/docker-compose-run-a-script-after-container-has-started/47629959#47629959
-# https://github.com/docker-library/php/blob/6b636b96c06be449514a5033037bf653d8a86967/8.3/bullseye/fpm/Dockerfile#L275
-ENTRYPOINT ["sh", "-xc", "/etc/rc.local && exec docker-php-entrypoint php-fpm"]
+# https://unix.stackexchange.com/questions/144514/add-arguments-to-bash-c/144519#144519
+ENTRYPOINT ["sh", "-xc", "/etc/rc.local && exec \"$@\"", " "]

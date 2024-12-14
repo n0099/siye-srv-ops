@@ -15,10 +15,10 @@ services:
         COPY <<CRON /etc/crontab
           # https://stackoverflow.com/questions/2388087/how-to-get-cron-to-call-in-the-correct-paths
           PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-          # https://gist.github.com/x-yuri/336fd3185de7e168023867302d5ac99b
+          # https://gist.github.com/x-yuri/336fd3185de7e168023867302d5ac99b?permalink_comment_id=5282378#gistcomment-5282378
           # https://askubuntu.com/questions/307534/unable-to-su-with-root-bin-bash-permission-denied
           * * * * * root su www-data -s /bin/sh -c 'php -d disable_functions $WEB_ROOT/flarum schedule:run' >/proc/1/fd/1 2>/proc/1/fd/2
         CRON
 
-        # https://github.com/AnalogJ/docker-cron/blob/master/debian.dockerfile
-        ENTRYPOINT ["cron", "-f", "-L", "2"]
+        # https://github.com/AnalogJ/docker-cron/blob/90c46adeb33fd1ada42b4fb801b5b07642ee08b6/debian.dockerfile#L13
+        CMD ["cron", "-f", "-L", "2"]
