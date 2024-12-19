@@ -12,6 +12,10 @@ services:
     depends_on:
       - php-fpm-base
     image: php-fpm
+    # https://github.com/docker-library/php/blob/6b636b96c06be449514a5033037bf653d8a86967/8.3/bullseye/fpm/Dockerfile#L275
+    command: php-fpm
+    ports:
+      - $PHP_FPM_PORT:9000
     build:
       dockerfile_inline: |
         # syntax=docker/dockerfile:1
@@ -21,7 +25,4 @@ services:
           https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions \
           /usr/local/bin
         RUN install-php-extensions $PHP_EXTENSIONS
-    # https://github.com/docker-library/php/blob/6b636b96c06be449514a5033037bf653d8a86967/8.3/bullseye/fpm/Dockerfile#L275
-    command: php-fpm
-    ports:
-      - $PHP_FPM_PORT:9000
+        WORKDIR $WEB_ROOT
