@@ -3,8 +3,6 @@ services:
     extends:
       file: ../common.compose.yaml
       service: common
-    depends_on:
-      - php-fpm
     build:
       dockerfile_inline: |
         # syntax=docker/dockerfile:1

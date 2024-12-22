@@ -2,11 +2,8 @@ services:
   common:
     extra_hosts:
       - docker-host.n0099.net:host-gateway
-    environment:
-      PHP_INI_OPEN_BASEDIR: /tmp:$WEB_ROOT
     volumes:
       - type: bind
         source: $WEB_ROOT
         target: $WEB_ROOT
-    pull_policy: build
     restart: on-failure
