@@ -1,9 +1,12 @@
 # syntax=docker/dockerfile:1
-FROM php:8.3-fpm
+FROM php:8.3-fpm AS php-fpm
 
-ADD --chmod=0755 https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
-RUN install-php-extensions opcache && \
-    cp "$PHP_INI_DIR"/php.ini-production "$PHP_INI_DIR"/php.ini
+ADD --chmod=0755 \
+    https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions \
+    /usr/local/bin
+# https://github.com/docker/docs/issues/18566#issuecomment-1796418110
+RUN install-php-extensions opcache \
+ && cp "$PHP_INI_DIR"/php.ini-production "$PHP_INI_DIR"/php.ini
 COPY <<INI "$PHP_INI_DIR"/conf.d/Dockerfile.ini
 [PHP]
 ; https://book.hacktricks.xyz/network-services-pentesting/pentesting-web/php-tricks-esp/php-useful-functions-disable_functions-open_basedir-bypass#filesystem-functions
@@ -20,6 +23,13 @@ opcache.max_accelerated_files = 65536
 opcache.file_cache = /tmp/opcache
 INI
 
+ARG PHP_INI_OPEN_BASEDIR
+# https://docs.docker.com/reference/dockerfile/#using-arg-variables
+# https://docs.docker.com/reference/compose-file/build/#args
+ENV PHP_INI_OPEN_BASEDIR=$PHP_INI_OPEN_BASEDIR
+# https://stackoverflow.com/questions/38438933/how-to-make-a-build-arg-mandatory-during-docker-build
+RUN test -n "$PHP_INI_OPEN_BASEDIR"
+
 COPY <<BASH /etc/rc.local
 # https://unix.stackexchange.com/questions/296705/using-sed-with-ampersand
 # https://unix.stackexchange.com/questions/32907/what-characters-do-i-need-to-escape-when-using-sed-in-a-sh-script
@@ -30,3 +40,10 @@ RUN chmod +x /etc/rc.local
 # https://stackoverflow.com/questions/47615751/docker-compose-run-a-script-after-container-has-started/47629959#47629959
 # https://unix.stackexchange.com/questions/144514/add-arguments-to-bash-c/144519#144519
 ENTRYPOINT ["sh", "-xc", "/etc/rc.local && exec \"$@\"", " "]
+
+ARG WEB_ROOT
+RUN test -n "$WEB_ROOT"
+WORKDIR $WEB_ROOT
+
+ARG PHP_EXTENSIONS
+RUN install-php-extensions $PHP_EXTENSIONS

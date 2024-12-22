@@ -5,7 +5,5 @@ services:
     extends:
       file: ../common.compose.yaml
       service: common
-    depends_on:
-      - php-fpm
     image: php-fpm
     command: php -d disable_functions $WEB_ROOT/flarum queue:work
