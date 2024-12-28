@@ -3,3 +3,4 @@ include:
   - ../flarum/compose.yaml
   - ../flarum/sonic.compose.yaml
   - ../flarum/redis.compose.yaml
+  - ../flarum/inotifyAdd/compose.yaml
