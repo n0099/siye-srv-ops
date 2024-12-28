@@ -6,21 +6,23 @@ services:
     build:
       dockerfile_inline: |
         # syntax=docker/dockerfile:1
-        FROM php-fpm
+        FROM $COMPOSE_PROJECT_NAME-php-fpm
 
         # https://github.com/aptible/supercronic/releases/tag/v0.2.33
         ENV SUPERCRONIC_URL=https://github.com/aptible/supercronic/releases/download/v0.2.33/supercronic-linux-amd64 \
             SUPERCRONIC_SHA1SUM=71b0d58cc53f6bd72cf2f293e09e294b79c666d8 \
             SUPERCRONIC=supercronic-linux-amd64
         # https://github.com/docker/docs/issues/18566#issuecomment-1796418110
-        RUN curl -fsSLO "$$SUPERCRONIC_URL" \
-         && echo "$${SUPERCRONIC_SHA1SUM}  $${SUPERCRONIC}" | sha1sum -c - \
-         && chmod +x "$$SUPERCRONIC" \
-         && mv "$$SUPERCRONIC" "/usr/local/bin/$${SUPERCRONIC}" \
-         && ln -s "/usr/local/bin/$${SUPERCRONIC}" /usr/local/bin/supercronic
+        RUN <<DASH dash
+            curl -fsSLO "$$SUPERCRONIC_URL"
+            echo "$${SUPERCRONIC_SHA1SUM}  $${SUPERCRONIC}" | sha1sum -c -
+            chmod +x "$$SUPERCRONIC"
+            mv "$$SUPERCRONIC" "/usr/local/bin/$${SUPERCRONIC}"
+            ln -s "/usr/local/bin/$${SUPERCRONIC}" /usr/local/bin/supercronic
+        DASH
 
         COPY <<CRON /etc/crontab
-          * * * * * php -d disable_functions $WEB_ROOT/flarum schedule:run
+            * * * * * php -d disable_functions $WEB_ROOT/flarum schedule:run
         CRON
         # not using `USER www-data` to run /etc/rc.local with root
-        CMD ["su", "www-data", "-s", "/bin/bash", "-c", "supercronic /etc/crontab"]
+        CMD ["su", "www-data", "-s", "/bin/dash", "-c", "supercronic /etc/crontab"]
