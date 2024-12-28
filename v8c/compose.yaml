@@ -1,0 +1,6 @@
+include:
+  - ../php-fpm/compose.yaml
+  - ../flarum/compose.yaml
+  - ../flarum/sonic.compose.yaml
+  - ../flarum/redis.compose.yaml
+  - ../flarum/inotifyAdd/compose.yaml
