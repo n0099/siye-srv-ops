@@ -7,7 +7,8 @@ ADD --chmod=0755 \
 ARG PHP_EXTENSIONS
 RUN <<-'DASH' dash
     test -n "$PHP_EXTENSIONS"
-    install-php-extensions opcache $PHP_EXTENSIONS
+    # https://stackoverflow.com/questions/74253281/git-was-not-found-in-your-path-skipping-source-download
+    install-php-extensions opcache zip $PHP_EXTENSIONS
     cp "$PHP_INI_DIR"/php.ini-production "$PHP_INI_DIR"/php.ini
 DASH
 
@@ -22,11 +23,27 @@ upload_max_filesize = 16M
 allow_url_fopen = Off
 
 [opcache]
+opcache.jit_buffer_size = 128M
+opcache.max_accelerated_files = 65536
+opcache.file_cache = /tmp/opcache
+INI
+
+# https://github.com/docker-library/php/issues/182#issuecomment-622441391
+# https://stackoverflow.com/questions/10844641/how-to-change-the-path-to-php-ini-in-php-cli-version/10844817#10844817
+COPY <<-'INI' "$PHP_INI_DIR"/conf.d/php-cli.ini
+[PHP]
+disable_functions =
+open_basedir =
+
+[opcache]
 opcache.enable_cli = 1
 opcache.jit_buffer_size = 128M
 opcache.max_accelerated_files = 65536
 opcache.file_cache = /tmp/opcache
 INI
+
+# https://getcomposer.org/doc/00-intro.md#docker-image
+COPY --from=composer/composer:latest-bin /composer /usr/local/bin/composer
 
 # https://docs.docker.com/reference/dockerfile/#using-arg-variables
 ARG PHP_INI_OPEN_BASEDIR

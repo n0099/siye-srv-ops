@@ -22,7 +22,7 @@ services:
         DASH
 
         COPY <<CRON /etc/crontab
-            * * * * * php -d disable_functions $WEB_ROOT/flarum schedule:run
+            * * * * * php $WEB_ROOT/flarum schedule:run
         CRON
         # not using `USER www-data` to run /etc/rc.local with root
         CMD ["su", "www-data", "-s", "/bin/dash", "-c", "supercronic /etc/crontab"]
