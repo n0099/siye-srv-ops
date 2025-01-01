@@ -1,3 +1,5 @@
+include:
+  - ../php-fpm/compose.yaml
 services:
   cron:
     extends:
@@ -5,4 +7,4 @@ services:
       service: cron
     build:
       args:
-        CRONTAB: '* * * * * php $WEB_ROOT/flarum schedule:run'
+        CRONTAB: '* * * * * php $WEB_ROOT/do.php'
