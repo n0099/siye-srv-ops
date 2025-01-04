@@ -12,7 +12,8 @@ RUN <<-'DASH' dash
     cp "$PHP_INI_DIR"/php.ini-production "$PHP_INI_DIR"/php.ini
 DASH
 
-COPY <<-'INI' "$PHP_INI_DIR"/conf.d/Dockerfile.ini
+ARG PHP_INI
+COPY <<INI "$PHP_INI_DIR"/conf.d/Dockerfile.ini
 # DO NOT INDENT php.ini
 [PHP]
 ; https://book.hacktricks.xyz/network-services-pentesting/pentesting-web/php-tricks-esp/php-useful-functions-disable_functions-open_basedir-bypass#filesystem-functions
@@ -21,6 +22,7 @@ open_basedir =
 post_max_size = 16M
 upload_max_filesize = 16M
 allow_url_fopen = Off
+$PHP_INI
 
 [opcache]
 opcache.jit_buffer_size = 128M
@@ -30,10 +32,11 @@ INI
 
 # https://github.com/docker-library/php/issues/182#issuecomment-622441391
 # https://stackoverflow.com/questions/10844641/how-to-change-the-path-to-php-ini-in-php-cli-version/10844817#10844817
-COPY <<-'INI' "$PHP_INI_DIR"/conf.d/php-cli.ini
+COPY <<INI "$PHP_INI_DIR"/conf.d/php-cli.ini
 [PHP]
 disable_functions =
 open_basedir =
+$PHP_INI
 
 [opcache]
 opcache.enable_cli = 1
