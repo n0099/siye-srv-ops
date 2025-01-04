@@ -26,5 +26,6 @@ services:
             test -n $$CRONTAB
             echo $$CRONTAB > /etc/crontab
         DASH
-        # not using `USER www-data` to run /etc/rc.local with root
-        CMD ["su", "www-data", "-s", "/bin/dash", "-c", "supercronic /etc/crontab"]
+
+        USER www-data
+        CMD supercronic /etc/crontab

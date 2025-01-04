@@ -7,9 +7,7 @@ services:
       - $PHP_FPM_PORT:9000
     build:
       args:
-        PHP_INI_OPEN_BASEDIR: /tmp:$WEB_ROOT
-        PHP_EXTENSIONS: $PHP_EXTENSIONS
+        PHP_INI_OPEN_BASEDIR: ${PHP_INI_OPEN_BASEDIR:-}
+        PHP_EXTENSIONS: ${PHP_EXTENSIONS:-}
         PHP_INI: ${PHP_INI:-}
-        WEB_ROOT: $WEB_ROOT
-    # https://github.com/docker-library/php/blob/6b636b96c06be449514a5033037bf653d8a86967/8.3/bullseye/fpm/Dockerfile#L275
-    command: php-fpm
+        WEB_ROOT: '${WEB_ROOT:?The path that will being mount as `/var/www/html` to sync between host and container: https://docs.docker.com/engine/storage/bind-mounts/}'

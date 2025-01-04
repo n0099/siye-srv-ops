@@ -29,4 +29,4 @@ RUN <<'DASH' dash
     apt-get install -y libjpeg62-turbo libpng16-16 libtiff6 inotify-tools
 DASH
 WORKDIR $WEB_ROOT/cdn
-ENTRYPOINT ["./inotifyAdd.sh"]
+ENTRYPOINT ./inotifyAdd.sh
