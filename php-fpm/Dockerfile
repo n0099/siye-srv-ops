@@ -3,6 +3,8 @@ FROM php:8.3-fpm AS php-fpm
 
 # https://getcomposer.org/doc/00-intro.md#docker-image
 COPY --from=composer/composer:latest-bin /composer /usr/local/bin/composer
+# https://github.com/composer/composer/issues/680
+ENV COMPOSER_HOME /tmp/.composer
 
 ADD --chmod=0755 \
     https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions \
@@ -46,7 +48,7 @@ INI
 COPY <<INI "$PHP_INI_DIR"/conf.d/php-cli.ini
 	[PHP]
 	disable_functions =
-	open_basedir = /tmp:$WEB_ROOT:$PHP_INI_OPEN_BASEDIR
+	open_basedir = /tmp:/usr/local/bin/composer:$WEB_ROOT:$PHP_INI_OPEN_BASEDIR
 	$PHP_INI
 
 	[opcache]

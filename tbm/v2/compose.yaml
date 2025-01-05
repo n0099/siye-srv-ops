@@ -1,0 +1,10 @@
+name: tbm-v2
+services:
+  php-fpm:
+    extends:
+      file: ../../php-fpm/compose.yaml
+      service: php-fpm
+    volumes:
+      - type: bind
+        source: /home/www/tbm/tbclient.protobuf/tbm_php
+        target: /home/www/tbm/tbclient.protobuf/tbm_php
