@@ -1,0 +1,8 @@
+services:
+  cron:
+    extends:
+      file: ../common.compose.yaml
+      service: common
+    build:
+      context: .
+      dockerfile: ./Dockerfile

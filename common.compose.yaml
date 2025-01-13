@@ -2,8 +2,4 @@ services:
   common:
     extra_hosts:
       - docker-host.n0099.net:host-gateway
-    volumes:
-      - type: bind
-        source: $WEB_ROOT
-        target: $WEB_ROOT
     restart: on-failure

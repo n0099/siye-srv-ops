@@ -3,8 +3,6 @@ services:
     extends:
       file: ../common.compose.yaml
       service: common
-    ports:
-      - $PHP_FPM_PORT:9000
     build:
       context: .
       dockerfile: ./Dockerfile
@@ -12,4 +10,3 @@ services:
         PHP_INI_OPEN_BASEDIR: ${PHP_INI_OPEN_BASEDIR:-}
         PHP_EXTENSIONS: ${PHP_EXTENSIONS:-}
         PHP_INI: ${PHP_INI:-}
-        WEB_ROOT: '${WEB_ROOT:?The path that will being mount as `/var/www/html` to sync between host and container: https://docs.docker.com/engine/storage/bind-mounts/}'

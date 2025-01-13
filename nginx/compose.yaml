@@ -1,0 +1,14 @@
+services:
+  nginx:
+    extends:
+      file: ../common.compose.yaml
+      service: common
+    ports:
+      - $NGINX_PORT:80
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+      args:
+        NGINX_DOMAIN: ${NGINX_DOMAIN:?}
+        NGINX_ROOT: ${NGINX_ROOT:-/var/www/html}
+        NGINX_CONF: ${NGINX_CONF:-}

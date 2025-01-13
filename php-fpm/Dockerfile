@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM php:8.3-fpm AS php-fpm
+FROM php:8.3-fpm
 
 # https://getcomposer.org/doc/00-intro.md#docker-image
 COPY --from=composer/composer:latest-bin /composer /usr/local/bin/composer
@@ -11,13 +11,9 @@ ADD --chmod=0755 \
     /usr/local/bin
 
 ARG PHP_EXTENSIONS
-ARG WEB_ROOT
-WORKDIR $WEB_ROOT
-
 RUN <<'DASH' dash
     # https://stackoverflow.com/questions/38438933/how-to-make-a-build-arg-mandatory-during-docker-build
     test -n "$PHP_EXTENSIONS"
-    test -n "$WEB_ROOT"
     # https://stackoverflow.com/questions/74253281/git-was-not-found-in-your-path-skipping-source-download
     install-php-extensions opcache zip $PHP_EXTENSIONS
     cp "$PHP_INI_DIR"/php.ini-production "$PHP_INI_DIR"/php.ini

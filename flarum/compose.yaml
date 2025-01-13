@@ -1,8 +1,49 @@
+x-volumes: &volumes
+  # not using `volumes_from` due to `include` like `extends`: https://docs.docker.com/compose/how-tos/multiple-compose-files/extends/#exceptions-and-limitations
+  - type: volume
+    source: data
+    target: /mnt/flarum
+  - type: volume
+    source: data
+    target: /var/www/html/public
+    volume:
+      subpath: public
+  - type: volume
+    source: data
+    target: /var/www/html/storage/sessions
+    volume:
+      subpath: storage/sessions
+volumes:
+  data:
 services:
-  cron:
+  php-fpm:
+    volumes: *volumes
     extends:
-      file: ../cron.compose.yaml
+      file: ../php-fpm/compose.yaml
+      service: php-fpm
+    build:
+      context: .. # https://github.com/devthefuture-org/dockerfile-x/issues/6#issuecomment-2143844431
+      dockerfile: flarum/php-fpm.Dockerfile
+  cron:
+    volumes: *volumes
+    extends:
+      file: ../cron/compose.yaml
       service: cron
     build:
       args:
-        CRONTAB: '* * * * * php $WEB_ROOT/flarum schedule:run'
+        CRON_BASE_IMAGE: ${COMPOSE_PROJECT_NAME}-php-fpm
+        CRONTAB: '* * * * * php /var/www/html/flarum schedule:run'
+  nginx:
+    volumes: *volumes
+    extends:
+      file: ../nginx/compose.yaml
+      service: nginx
+    build:
+      context: .. # https://github.com/devthefuture-org/dockerfile-x/issues/6#issuecomment-2143844431
+      dockerfile: flarum/nginx.Dockerfile
+      args:
+        NGINX_ROOT: /var/www/html/public
+        NGINX_CONF: |
+          location / {
+              try_files  $$uri $$uri/ /index.php?$$query_string;
+          }
