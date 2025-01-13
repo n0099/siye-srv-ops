@@ -4,6 +4,8 @@ services:
       file: ../../common.compose.yaml
       service: common
     build:
+      context: .
+      dockerfile: ./Dockerfile
       args:
         WEBP_VERSION: 1.5.0
         WEB_ROOT: $WEB_ROOT

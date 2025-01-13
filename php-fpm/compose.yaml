@@ -6,6 +6,8 @@ services:
     ports:
       - $PHP_FPM_PORT:9000
     build:
+      context: .
+      dockerfile: ./Dockerfile
       args:
         PHP_INI_OPEN_BASEDIR: ${PHP_INI_OPEN_BASEDIR:-}
         PHP_EXTENSIONS: ${PHP_EXTENSIONS:-}
