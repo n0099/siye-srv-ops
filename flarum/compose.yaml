@@ -24,6 +24,9 @@ services:
     build:
       context: .. # https://github.com/devthefuture-org/dockerfile-x/issues/6#issuecomment-2143844431
       dockerfile: flarum/php-fpm.Dockerfile
+      args:
+        # `/dev/null` and `/var/www` is used by `composer create-project`: https://github.com/composer/composer/blob/112e37d1dca22b3fdb81cf3524ab4994f47fdb8c/src/Composer/Factory.php#L423-L426
+        PHP_INI_OPEN_BASEDIR: /dev/null:/var/www:${PHP_INI_OPEN_BASEDIR:-}
   cron:
     volumes: *volumes
     extends:
