@@ -4,7 +4,10 @@ FROM php:8.3-fpm
 # https://getcomposer.org/doc/00-intro.md#docker-image
 COPY --from=composer/composer:latest-bin /composer /usr/local/bin/composer
 # https://github.com/composer/composer/issues/680
-ENV COMPOSER_HOME /tmp/.composer
+# https://getcomposer.org/doc/03-cli.md#environment-variables
+ENV COMPOSER_HOME=/tmp/.composer \
+    COMPOSER_NO_DEV=1
+
 ARG DEBIAN_FRONTEND=noninteractive
 
 ADD --chmod=0755 \

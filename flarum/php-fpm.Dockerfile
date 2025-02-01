@@ -3,7 +3,7 @@ INCLUDE php-fpm/Dockerfile
 
 # https://askubuntu.com/questions/972516/debian-frontend-environment-variable
 ARG DEBIAN_FRONTEND=noninteractive
-RUN apt-get update
+RUN apt-get update # for `apt-get install` in `10-composer-create.sh`
 
 # https://github.com/devthefuture-org/dockerfile-x/issues/6#issuecomment-2143844431
 COPY flarum/10-composer-create.sh /docker-init.d/10-composer-create.sh
