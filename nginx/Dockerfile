@@ -28,6 +28,6 @@ BASH
 
 # https://stackoverflow.com/questions/47615751/docker-compose-run-a-script-after-container-has-started/79333020#79333020
 # https://stackoverflow.com/questions/1423352/source-all-files-in-a-directory-from-bash-profile/35726215#35726215
-ENTRYPOINT ["bash", "-xc", "source <(cat /docker-init.d/*.sh) && exec /docker-entrypoint.sh \"$@\"", "$@"]
+ENTRYPOINT ["bash", "-euxo", "pipefail", "-c", "source <(cat /docker-init.d/*.sh) && exec /docker-entrypoint.sh \"$@\"", "$@"]
 # https://github.com/nginxinc/docker-nginx/blob/f227279d7b5c8ae8f99d29ed61f0da4c9ac0a404/stable/debian/Dockerfile#L145
 CMD ["nginx", "-g", "daemon off;"]

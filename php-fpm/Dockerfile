@@ -5,13 +5,16 @@ FROM php:8.3-fpm
 COPY --from=composer/composer:latest-bin /composer /usr/local/bin/composer
 # https://github.com/composer/composer/issues/680
 ENV COMPOSER_HOME /tmp/.composer
+ARG DEBIAN_FRONTEND=noninteractive
 
 ADD --chmod=0755 \
     https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions \
     /usr/local/bin
 
-ARG PHP_EXTENSIONS
-RUN <<'DASH' dash
+# https://askubuntu.com/questions/972516/debian-frontend-environment-variable
+ARG DEBIAN_FRONTEND=noninteractive \
+    PHP_EXTENSIONS
+RUN <<'DASH' dash -eux
     # https://stackoverflow.com/questions/38438933/how-to-make-a-build-arg-mandatory-during-docker-build
     test -n "$PHP_EXTENSIONS"
     install-php-extensions opcache $PHP_EXTENSIONS

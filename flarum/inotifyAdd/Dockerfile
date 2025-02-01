@@ -1,7 +1,9 @@
 # syntax=docker/dockerfile:1
 FROM debian:bookworm-slim AS build
 
-ARG WEBP_VERSION
+# https://askubuntu.com/questions/972516/debian-frontend-environment-variable
+ARG DEBIAN_FRONTEND=noninteractive \
+    WEBP_VERSION
 RUN <<'BASH' bash
     test -n "$WEBP_VERSION"
     apt-get update
@@ -23,7 +25,7 @@ FROM debian:bookworm-slim
 COPY --from=build /usr/local/bin/cwebp /usr/local/bin/cwebp
 
 ARG WEB_ROOT
-RUN <<'DASH' dash
+RUN <<'DASH' dash -eux
     test -n "$WEB_ROOT"
     apt-get update
     apt-get install -y libjpeg62-turbo libpng16-16 libtiff6 inotify-tools
