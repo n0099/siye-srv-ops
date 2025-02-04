@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
-ARG CRON_BASE_IMAGE
+ARG BASE_IMAGE
 # https://github.com/devthefuture-org/dockerfile-x/issues/11
-FROM $CRON_BASE_IMAGE
+FROM $BASE_IMAGE
 
 # https://github.com/aptible/supercronic/releases/tag/v0.2.33
 ARG SUPERCRONIC_URL=https://github.com/aptible/supercronic/releases/download/v0.2.33/supercronic-linux-amd64 \

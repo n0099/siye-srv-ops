@@ -20,7 +20,7 @@ ARG DEBIAN_FRONTEND=noninteractive \
 RUN <<'DASH' dash -eux
     # https://stackoverflow.com/questions/38438933/how-to-make-a-build-arg-mandatory-during-docker-build
     test -n "$PHP_EXTENSIONS"
-    install-php-extensions opcache $PHP_EXTENSIONS
+    install-php-extensions opcache zip $PHP_EXTENSIONS
 
     # https://stackoverflow.com/questions/52444600/is-there-a-problem-with-using-php-zip-composer-warns-about-it
     apt-get update

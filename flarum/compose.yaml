@@ -34,7 +34,7 @@ services:
       service: cron
     build:
       args:
-        CRON_BASE_IMAGE: ${COMPOSE_PROJECT_NAME}-php-fpm
+        BASE_IMAGE: ${COMPOSE_PROJECT_NAME}-php-fpm
         CRONTAB: '* * * * * php /var/www/html/flarum schedule:run'
   nginx:
     volumes: *volumes

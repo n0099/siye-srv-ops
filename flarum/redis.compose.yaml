@@ -11,7 +11,7 @@ services:
     extends:
       file: ../common.compose.yaml
       service: common
-    image: $COMPOSE_PROJECT_NAME-php-fpm
+    image: ${COMPOSE_PROJECT_NAME}-php-fpm
     command: php $WEB_ROOT/flarum queue:work
 volumes:
   redis:
