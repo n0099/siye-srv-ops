@@ -1,4 +1,4 @@
 # https://github.com/phpmyadmin/docker/issues/284
 # https://github.com/phpmyadmin/docker/issues/440
 include:
- - ../php-fpm/compose.yaml
+  - ../../base/php-fpm/compose.yaml

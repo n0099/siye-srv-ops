@@ -1,2 +1,2 @@
 include:
-  - ../flarum/compose.yaml
+  - ../../base/flarum/compose.yaml

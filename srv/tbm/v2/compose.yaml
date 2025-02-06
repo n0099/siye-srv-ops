@@ -2,7 +2,7 @@ name: tbm-v2
 services:
   php-fpm:
     extends:
-      file: ../../php-fpm/compose.yaml
+      file: ../../../base/php-fpm/compose.yaml
       service: php-fpm
     volumes:
       - type: bind

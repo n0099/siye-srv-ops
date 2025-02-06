@@ -1,9 +1,9 @@
 include:
-  - ../php-fpm/compose.yaml
+  - ../../base/php-fpm/compose.yaml
 services:
   cron:
     extends:
-      file: ../cron.compose.yaml
+      file: ../base/cron.compose.yaml
       service: cron
     build:
       args:
