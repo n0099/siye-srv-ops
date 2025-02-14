@@ -4,7 +4,7 @@ FROM debian:bookworm-slim AS build
 # https://askubuntu.com/questions/972516/debian-frontend-environment-variable
 ARG DEBIAN_FRONTEND=noninteractive \
     WEBP_VERSION
-RUN <<'BASH' bash
+RUN <<'BASH' bash -euxo pipefail
     test -n "$WEBP_VERSION"
     apt-get update
     # https://github.com/webmproject/libwebp/blob/main/doc/building.md

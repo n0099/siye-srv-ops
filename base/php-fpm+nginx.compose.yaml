@@ -1,0 +1,20 @@
+x-volumes: &volumes
+  - type: volume
+    source: data
+    target: /var/www/html
+volumes:
+  data:
+services:
+  php-fpm:
+    volumes: *volumes
+    extends:
+      file: ./php-fpm/compose.yaml
+      service: php-fpm
+  nginx:
+    volumes: *volumes
+    extends:
+      file: ./nginx/compose.yaml
+      service: nginx
+    build:
+      context: . # https://github.com/devthefuture-org/dockerfile-x/issues/6#issuecomment-2143844431
+      dockerfile: nginx/Dockerfile
