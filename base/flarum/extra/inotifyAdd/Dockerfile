@@ -24,11 +24,11 @@ BASH
 FROM debian:bookworm-slim
 COPY --from=build /usr/local/bin/cwebp /usr/local/bin/cwebp
 
-ARG WEB_ROOT
 RUN <<'DASH' dash -eux
-    test -n "$WEB_ROOT"
     apt-get update
     apt-get install -y libjpeg62-turbo libpng16-16 libtiff6 inotify-tools
 DASH
-WORKDIR $WEB_ROOT/cdn
-ENTRYPOINT ["exec ./inotifyAdd.sh"]
+
+USER www-data
+WORKDIR /var/www/html/inotifyAdd
+ENTRYPOINT exec ./inotifyAdd.sh # using shell form as exec is a shell builtin

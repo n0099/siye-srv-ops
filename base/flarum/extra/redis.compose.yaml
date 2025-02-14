@@ -9,9 +9,11 @@ services:
     command: redis-server --save 60 1 --loglevel warning
   queue:
     extends:
-      file: ../common.compose.yaml
-      service: common
-    image: ${COMPOSE_PROJECT_NAME}-php-fpm
-    command: php $WEB_ROOT/flarum queue:work
+      file: ../compose.yaml
+      service: php-fpm
+    # https://github.com/docker/compose/issues/4744#issuecomment-2640332903
+    depends_on:
+      - php-fpm
+    command: php flarum queue:work
 volumes:
   redis:

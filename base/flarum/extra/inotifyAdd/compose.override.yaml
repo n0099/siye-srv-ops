@@ -1,0 +1,22 @@
+# `volume.subpath` won't work when it's an mountpoint to zfs dataset
+x-volumes: &volumes
+  - type: volume
+    source: files_original
+    target: /var/www/html/public/assets/filesOriginal
+  - type: volume
+    source: files_webp
+    target: /var/www/html/public/assets/filesWebp
+volumes:
+  files_original:
+  files_webp:
+services:
+  cron:
+    volumes: *volumes
+  inotify-add:
+    volumes: *volumes
+  nginx:
+    volumes: *volumes
+  php-fpm:
+    volumes: *volumes
+  queue:
+    volumes: *volumes

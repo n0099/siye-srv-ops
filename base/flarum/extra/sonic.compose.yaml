@@ -2,9 +2,13 @@ services:
   sonic:
     image: valeriansaliou/sonic:v1.4.9
     volumes:
-      - type: bind
-        source: $SONIC_STORE
+      - type: volume
+        source: sonic
         target: /var/lib/sonic/store
-      - type: bind
-        source: $SONIC_CONFIG
+      - type: volume
+        source: sonic
         target: /etc/sonic.cfg
+        volume:
+          subpath: config.cfg
+volumes:
+  sonic:
