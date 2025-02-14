@@ -1,9 +1,6 @@
 # syntax=docker/dockerfile:1
 FROM nginx:bookworm
 
-# https://github.com/devthefuture-org/dockerfile-x/issues/6#issuecomment-2143844431
-COPY nginx/nginx.conf /etc/nginx/templates/default.conf.template
-
 # https://docs.docker.com/build/building/variables/#env-usage-example
 ARG NGINX_DOMAIN
 ENV NGINX_DOMAIN=$NGINX_DOMAIN
@@ -18,12 +15,22 @@ COPY <<'BASH' /docker-init.d/00-env.sh
     test -n "$NGINX_ROOT"
     test -n "$NGINX_CONF"
 BASH
+
+# https://github.com/devthefuture-org/dockerfile-x/issues/6#issuecomment-2143844431
+COPY nginx/nginx.conf /etc/nginx/templates/default.conf.template
 COPY <<'BASH' /docker-init.d/01-user.sh
     sed -iE 's/^user\s+nginx;$/user  www-data;/' /etc/nginx/nginx.conf
 BASH
+
+COPY nginx/php-fpm.conf /etc/nginx/snippets/php-fpm.conf
 COPY <<'BASH' /docker-init.d/02-resolver.sh
     # https://serverfault.com/questions/240476/how-to-force-nginx-to-resolve-dns-of-a-dynamic-hostname-everytime-when-doing-p/973311#973311
-    export NGINX_RESOLVER="$(cat /etc/resolv.conf | grep -i '^nameserver' | head -n1 | cut -d' ' -f2)"
+    # https://trac.nginx.org/nginx/ticket/2128
+    sed -i 's/\$NGINX_RESOLVER/'"$(cat /etc/resolv.conf | grep -i '^nameserver' | head -n1 | cut -d' ' -f2)"/ /etc/nginx/snippets/php-fpm.conf
+BASH
+
+COPY <<'BASH' /docker-init.d/03-conf-extra.sh
+    export NGINX_CONF_EXTRA="$(cat /etc/nginx/extra.conf)"
 BASH
 
 # https://stackoverflow.com/questions/47615751/docker-compose-run-a-script-after-container-has-started/79333020#79333020
