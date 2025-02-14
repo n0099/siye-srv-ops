@@ -41,6 +41,7 @@ COPY <<-INI "$PHP_INI_DIR"/conf.d/Dockerfile.ini
 	post_max_size = 16M
 	upload_max_filesize = 16M
 	allow_url_fopen = Off
+	expose_php = Off
 	$PHP_INI
 
 	[opcache]
@@ -54,7 +55,7 @@ INI
 COPY <<INI "$PHP_INI_DIR"/conf.d/php-cli.ini
 	[PHP]
 	disable_functions =
-	open_basedir = /tmp:/var/www/html:/usr/local/bin/composer:$PHP_INI_OPEN_BASEDIR
+	open_basedir = /tmp:/var/www/html:/usr/local/bin/composer:/usr/bin/7zz:$PHP_INI_OPEN_BASEDIR
 	$PHP_INI
 
 	[opcache]

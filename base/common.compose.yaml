@@ -2,4 +2,4 @@ services:
   common:
     extra_hosts:
       - docker-host.n0099.net:host-gateway
-    restart: on-failure
+    restart: unless-stopped

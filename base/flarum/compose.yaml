@@ -36,6 +36,9 @@ services:
       args:
         BASE_IMAGE: ${COMPOSE_PROJECT_NAME}-php-fpm
         CRONTAB: '* * * * * php /var/www/html/flarum schedule:run'
+    # https://github.com/docker/compose/issues/4744#issuecomment-2640332903
+    depends_on:
+      - php-fpm
   nginx:
     volumes: *volumes
     extends:
@@ -48,5 +51,5 @@ services:
         NGINX_ROOT: /var/www/html/public
         NGINX_CONF: |
           location / {
-              try_files  $$uri $$uri/ /index.php?$$query_string;
+              try_files  $$uri $$uri/ /index.php;
           }
