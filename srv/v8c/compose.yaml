@@ -1,5 +1,4 @@
 include:
-  - ../../base/php-fpm/compose.yaml
   - ../../base/flarum/compose.yaml
   - ../../base/flarum/extra/sonic.compose.yaml
   - ../../base/flarum/extra/redis.compose.yaml
