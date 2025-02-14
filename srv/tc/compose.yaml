@@ -1,10 +1,18 @@
 include:
-  - ../../base/php-fpm/compose.yaml
+  - ../../base/php-fpm+nginx.compose.yaml
 services:
   cron:
+    volumes:
+      - type: volume
+        source: data
+        target: /var/www/html
     extends:
-      file: ../base/cron.compose.yaml
+      file: ../../base/cron/compose.yaml
       service: cron
     build:
       args:
-        CRONTAB: '* * * * * php $WEB_ROOT/do.php'
+        BASE_IMAGE: ${COMPOSE_PROJECT_NAME}-php-fpm
+        CRONTAB: '* * * * * php do.php'
+    # https://github.com/docker/compose/issues/4744#issuecomment-2640332903
+    depends_on:
+      - php-fpm
