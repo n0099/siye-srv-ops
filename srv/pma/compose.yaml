@@ -1,4 +1,22 @@
 # https://github.com/phpmyadmin/docker/issues/284
 # https://github.com/phpmyadmin/docker/issues/440
-include:
-  - ../../base/php-fpm+nginx.compose.yaml
+volumes:
+  data:
+services:
+  php-fpm:
+    extends:
+      file: ../../base/php-fpm+nginx.compose.yaml
+      service: php-fpm
+    build:
+      context: ../../base # https://github.com/devthefuture-org/dockerfile-x/issues/6#issuecomment-2143844431
+      dockerfile: ../srv/pma/php-fpm.Dockerfile
+    volumes: !override
+      - type: volume
+        target: /var/www/html/config.inc.php
+        source: data
+        volume:
+          subpath: config.inc.php
+  nginx:
+    extends:
+      file: ../../base/php-fpm+nginx.compose.yaml
+      service: nginx
