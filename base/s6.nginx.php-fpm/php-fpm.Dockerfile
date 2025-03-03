@@ -1,38 +1,16 @@
 # syntax=docker/dockerfile:1
-FROM php:8.3-fpm
+RUN <<'ASH' ash -eux
+    apk add --no-cache php83 php83-fpm php83-opcache php83-zip composer
+ASH
 
-# https://getcomposer.org/doc/00-intro.md#docker-image
-COPY --from=composer/composer:latest-bin /composer /usr/local/bin/composer
 # https://github.com/composer/composer/issues/680
 # https://getcomposer.org/doc/03-cli.md#environment-variables
 ENV COMPOSER_HOME=/tmp/.composer \
     COMPOSER_NO_DEV=1
 
-ARG DEBIAN_FRONTEND=noninteractive
-
-ADD --chmod=0755 \
-    https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions \
-    /usr/local/bin
-
-# https://askubuntu.com/questions/972516/debian-frontend-environment-variable
-ARG DEBIAN_FRONTEND=noninteractive \
-    PHP_EXTENSIONS
-RUN <<'DASH' dash -eux
-    # https://stackoverflow.com/questions/38438933/how-to-make-a-build-arg-mandatory-during-docker-build
-    test -n "$PHP_EXTENSIONS"
-    install-php-extensions opcache zip $PHP_EXTENSIONS
-
-    # https://stackoverflow.com/questions/52444600/is-there-a-problem-with-using-php-zip-composer-warns-about-it
-    apt-get update
-    apt-get install -y 7zip
-
-    cp "$PHP_INI_DIR"/php.ini-production "$PHP_INI_DIR"/php.ini
-DASH
-
-# optional args
 ARG PHP_INI
 ARG PHP_INI_OPEN_BASEDIR
-COPY <<-INI "$PHP_INI_DIR"/conf.d/Dockerfile.ini
+COPY <<-INI /etc/php83/conf.d/Dockerfile.ini
 	# using tab for <<- to remove them: https://pubs.opengroup.org/onlinepubs/9799919799/utilities/V3_chap02.html#tag_19_07_04
 	[PHP]
 	; https://book.hacktricks.xyz/network-services-pentesting/pentesting-web/php-tricks-esp/php-useful-functions-disable_functions-open_basedir-bypass#filesystem-functions
@@ -52,10 +30,10 @@ INI
 
 # https://github.com/docker-library/php/issues/182#issuecomment-622441391
 # https://stackoverflow.com/questions/10844641/how-to-change-the-path-to-php-ini-in-php-cli-version/10844817#10844817
-COPY <<INI "$PHP_INI_DIR"/conf.d/php-cli.ini
+COPY <<-INI /etc/php83/conf.d/php-cli.ini
 	[PHP]
 	disable_functions =
-	open_basedir = /tmp:/var/www/html:/usr/local/bin/composer:/usr/bin/7zz:$PHP_INI_OPEN_BASEDIR
+	open_basedir = /tmp:/var/www/html:/usr/bin/composer:/usr/bin/composer.phar:/usr/bin/7zz:$PHP_INI_OPEN_BASEDIR
 	$PHP_INI
 
 	[opcache]

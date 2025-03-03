@@ -1,0 +1,19 @@
+#!/command/with-contenv ash
+set -ex
+
+<<'COMMENT'
+sed -Ei \
+    's/^user\s+nginx;$/user www-data;/i' \
+    /etc/nginx/nginx.conf
+COMMENT
+
+# https://stackoverflow.com/questions/3869072/test-for-non-zero-length-string-in-bash-n-var-or-var
+# https://superuser.com/questions/1148950/what-is-shell-format-in-envsubst
+[ -n "$NGINX_SUB_BASE_DIR" ] &&
+    export NGINX_CONF_SUB_BASE_DIR="$(envsubst '$NGINX_SUB_BASE_DIR $NGINX_SUB_BASE_DIR_ALIAS' < /etc/nginx/templates/sub-base-dir.conf)"
+
+export NGINX_CONF_EXTRA="$(cat /etc/nginx/extra.conf)"
+
+envsubst < /etc/nginx/http.d/default.conf | sponge /etc/nginx/http.d/default.conf
+
+nginx -g "daemon off;"

@@ -1,5 +1,5 @@
 services:
-  nginx:
+  s6:
     extends:
       file: ../common.compose.yaml
       service: common
@@ -11,6 +11,8 @@ services:
       context: .
       dockerfile: ./Dockerfile
       args:
+        PHP_INI_OPEN_BASEDIR: ${PHP_INI_OPEN_BASEDIR:-}
+        PHP_INI: ${PHP_INI:-}
         NGINX_DOMAIN: ${NGINX_DOMAIN:?}
         NGINX_ROOT: ${NGINX_ROOT:-/var/www/html}
         NGINX_CONF: ${NGINX_CONF:-}
