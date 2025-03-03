@@ -1,22 +1,16 @@
-# https://github.com/phpmyadmin/docker/issues/284
-# https://github.com/phpmyadmin/docker/issues/440
-volumes:
-  data:
 services:
-  php-fpm:
+  s6:
     extends:
-      file: ../../base/php-fpm+nginx.compose.yaml
-      service: php-fpm
-    build:
-      context: ../../base # https://github.com/devthefuture-org/dockerfile-x/issues/6#issuecomment-2143844431
-      dockerfile: ../srv/pma/php-fpm.Dockerfile
-    volumes: !override
+      file: ../../base/s6.nginx.php-fpm/compose.yaml
+      service: s6
+    volumes:
+      - type: bind
+        source: ./s6-rc.d
+        target: /s6-rc.extra.d
       - type: volume
         target: /var/www/html/config.inc.php
         source: data
         volume:
           subpath: config.inc.php
-  nginx:
-    extends:
-      file: ../../base/php-fpm+nginx.compose.yaml
-      service: nginx
+volumes:
+  data:
