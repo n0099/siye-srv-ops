@@ -8,7 +8,7 @@ services:
         source: ./s6-rc.d
         target: /s6-rc.extra.d
       - type: volume
-        target: /var/www/html/config.inc.php
+        target: /var/www/config.inc.php
         source: data
         volume:
           subpath: config.inc.php

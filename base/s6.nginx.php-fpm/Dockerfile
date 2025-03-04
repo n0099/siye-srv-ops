@@ -2,7 +2,7 @@
 FROM alpine:3.21
 
 RUN <<'ASH' ash -eux
-    adduser -S www-data -G www-data -h /var/www/html -s /sbin/nologin
+    adduser -S www-data -G www-data -h /var/www -s /sbin/nologin
 ASH
 
 INCLUDE ./s6.Dockerfile

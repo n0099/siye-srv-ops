@@ -15,7 +15,7 @@ COPY <<-INI /etc/php83/conf.d/Dockerfile.ini
 	[PHP]
 	; https://book.hacktricks.xyz/network-services-pentesting/pentesting-web/php-tricks-esp/php-useful-functions-disable_functions-open_basedir-bypass#filesystem-functions
 	disable_functions = putenv,create_function,disk_free_space,disk_total_space,diskfreespace,dl,eval,exec,get_current_user,getlastmo,getmygid,getmyinode,getmypid,getmyuid,mail,mb_send_mail,highlight_file,opcache_get_configuration,opcache_get_status,passthru,pclose,pcntl_alarm,pcntl_async_signals,pcntl_exec,pcntl_fork,pcntl_get_last_error,pcntl_getpriority,pcntl_setpriority,pcntl_signal,pcntl_signal_dispatch,pcntl_signal_get_handler,pcntl_sigprocmask,pcntl_sigtimedwait,pcntl_sigwaitinfo,pcntl_strerror,pcntl_unshare,pcntl_wait,pcntl_waitpid,pcntl_wexitstatus,pcntl_wifcontinued,pcntl_wifexited,pcntl_wifsignaled,pcntl_wifstopped,pcntl_wstopsig,pcntl_wtermsig,php_ini_loaded_file,phpinfo,popen,posix_getlogin,posix_getpwuid,posix_kill,posix_mkfifo,posix_setpgid,posix_setsid,posix_setuid,posix_ttyname,posix_uname,proc_close,proc_get_status,proc_nice,proc_open,proc_terminate,shell_exec,show_source,system
-	open_basedir = /tmp:/var/www/html:$PHP_INI_OPEN_BASEDIR
+	open_basedir = /tmp:/var/www:$PHP_INI_OPEN_BASEDIR
 	post_max_size = 16M
 	upload_max_filesize = 16M
 	allow_url_fopen = Off
@@ -33,7 +33,7 @@ INI
 COPY <<-INI /etc/php83/conf.d/php-cli.ini
 	[PHP]
 	disable_functions =
-	open_basedir = /tmp:/var/www/html:/usr/bin/composer:/usr/bin/composer.phar:/usr/bin/7zz:$PHP_INI_OPEN_BASEDIR
+	open_basedir = /tmp:/var/www:/usr/bin/composer:/usr/bin/composer.phar:/usr/bin/7zz:$PHP_INI_OPEN_BASEDIR
 	$PHP_INI
 
 	[opcache]
@@ -41,4 +41,13 @@ COPY <<-INI /etc/php83/conf.d/php-cli.ini
 	opcache.jit_buffer_size = 128M
 	opcache.max_accelerated_files = 65536
 	opcache.file_cache = /tmp/opcache
+INI
+
+COPY <<-'INI' /etc/php83/php-fpm.d/www.extra.conf
+	[www]
+	user = www-data
+	group = www-data
+	listen = /run/php-fpm.sock
+	listen.owner = www-data
+	listen.group = www-data
 INI
