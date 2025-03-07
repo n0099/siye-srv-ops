@@ -3,6 +3,12 @@ RUN <<'ASH' ash -eux
     apk add --no-cache php83 php83-fpm php83-opcache php83-zip composer
 ASH
 
+ARG PHP_EXTENSIONS
+COPY <<EXECLINE /etc/s6-overlay/s6-rc.d/php-extensions/up
+    #!/command/execlineb -P
+    /etc/s6-overlay/s6-rc.d/php-extensions/up.sh $PHP_EXTENSIONS
+EXECLINE
+
 # https://github.com/composer/composer/issues/680
 # https://getcomposer.org/doc/03-cli.md#environment-variables
 ENV COMPOSER_HOME=/tmp/.composer \

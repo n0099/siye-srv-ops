@@ -13,6 +13,7 @@ services:
       args:
         PHP_INI_OPEN_BASEDIR: ${PHP_INI_OPEN_BASEDIR:-}
         PHP_INI: ${PHP_INI:-}
+        PHP_EXTENSIONS: ${PHP_EXTENSIONS:-}
         NGINX_DOMAIN: ${NGINX_DOMAIN:?}
         NGINX_ROOT: ${NGINX_ROOT:-/var/www}
         NGINX_CONF: ${NGINX_CONF:-}

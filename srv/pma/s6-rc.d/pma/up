@@ -1,3 +1,2 @@
 #!/command/execlineb -P
-foreground { pwd }
 /etc/s6-overlay/s6-rc.d/pma/up.sh

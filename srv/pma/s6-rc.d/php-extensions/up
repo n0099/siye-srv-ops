@@ -1,3 +1,0 @@
-#!/command/execlineb -P
-# https://docs.phpmyadmin.net/en/master/require.html
-apk add php83-session php83-ctype php83-mysqli php83-gd
