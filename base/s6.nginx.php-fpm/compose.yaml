@@ -19,6 +19,7 @@ services:
         NGINX_CONF: ${NGINX_CONF:-}
         NGINX_SUB_BASE_DIR: ${NGINX_SUB_BASE_DIR:-}
         NGINX_SUB_BASE_DIR_ALIAS: ${NGINX_SUB_BASE_DIR_ALIAS:-/var/www/}
+        CRONTAB: ${CRONTAB:-}
     volumes:
       - type: bind
         source: ${NGINX_CONF_EXTRA_FILE:-/dev/null}
