@@ -5,21 +5,21 @@ services:
       service: common
     ports:
       - target: 80
-        published: $NGINX_PORT
+        published: ${NGINX_PORT:?}
         host_ip: 127.0.0.1
     build:
       context: .
       dockerfile: ./Dockerfile
       args:
-        PHP_INI_OPEN_BASEDIR: ${PHP_INI_OPEN_BASEDIR:-}
+        CRONTAB: ${CRONTAB:-}
         PHP_INI: ${PHP_INI:-}
+        PHP_INI_OPEN_BASEDIR: ${PHP_INI_OPEN_BASEDIR:-}
         PHP_EXTENSIONS: ${PHP_EXTENSIONS:-}
         NGINX_DOMAIN: ${NGINX_DOMAIN:?}
         NGINX_ROOT: ${NGINX_ROOT:-/var/www}
         NGINX_CONF: ${NGINX_CONF:-}
         NGINX_SUB_BASE_DIR: ${NGINX_SUB_BASE_DIR:-}
         NGINX_SUB_BASE_DIR_ALIAS: ${NGINX_SUB_BASE_DIR_ALIAS:-/var/www/}
-        CRONTAB: ${CRONTAB:-}
     volumes:
       - type: bind
         source: ${NGINX_CONF_EXTRA_FILE:-/dev/null}

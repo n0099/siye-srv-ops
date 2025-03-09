@@ -1,3 +1,12 @@
 name: tbm-v1
-include:
-  - ../../../base/php-fpm+nginx.compose.yaml
+services:
+  s6:
+    extends:
+      file: ../../../base/s6.nginx.php-fpm/compose.yaml
+      service: s6
+    volumes:
+      - type: volume
+        target: /var/www
+        source: data
+volumes:
+  data:

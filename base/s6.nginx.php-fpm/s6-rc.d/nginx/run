@@ -1,5 +1,5 @@
 #!/command/with-contenv ash
-set -ex
+set -ex # not setting `-u` https://gist.github.com/mohanpedala/1e2ff5661761d3abd0385e8223e16425 to allow optional env vars
 
 <<'COMMENT'
 sed -Ei \
@@ -16,4 +16,4 @@ export NGINX_CONF_EXTRA="$(cat /etc/nginx/extra.conf)"
 
 envsubst < /etc/nginx/http.d/default.conf | sponge /etc/nginx/http.d/default.conf
 
-nginx -g "daemon off;"
+exec nginx -g "daemon off;"
