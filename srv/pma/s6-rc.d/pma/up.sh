@@ -1,7 +1,8 @@
 #!/bin/ash -eux
-[ -f /var/www/index.php ] && exit 0
 cd /var/www
-apk add curl
+[ -f index.php ] && exit 0
+
+apk add --no-cache curl
 curl -LOJ https://www.phpmyadmin.net/downloads/phpMyAdmin-latest-all-languages.tar.xz
 tar xf phpMyAdmin-latest-all-languages.tar.xz
 rm phpMyAdmin-latest-all-languages.tar.xz

@@ -1,19 +1,13 @@
 #!/command/with-contenv ash
 set -ex # not setting `-u` https://gist.github.com/mohanpedala/1e2ff5661761d3abd0385e8223e16425 to allow optional env vars
 
-<<'COMMENT'
-sed -Ei \
-    's/^user\s+nginx;$/user www-data;/i' \
-    /etc/nginx/nginx.conf
-COMMENT
-
 # https://stackoverflow.com/questions/3869072/test-for-non-zero-length-string-in-bash-n-var-or-var
 # https://superuser.com/questions/1148950/what-is-shell-format-in-envsubst
 [ -n "$NGINX_SUB_BASE_DIR" ] &&
-    export NGINX_CONF_SUB_BASE_DIR="$(envsubst '$NGINX_SUB_BASE_DIR $NGINX_SUB_BASE_DIR_ALIAS' < /etc/nginx/templates/sub-base-dir.conf)"
+    export NGINX_CONF_SUB_BASE_DIR="$(envsubst '$NGINX_SUB_BASE_DIR $NGINX_SUB_BASE_DIR_ALIAS' </etc/nginx/templates/sub-base-dir.conf)"
 
 export NGINX_CONF_EXTRA="$(cat /etc/nginx/extra.conf)"
 
-envsubst < /etc/nginx/http.d/default.conf | sponge /etc/nginx/http.d/default.conf
+envsubst '$NGINX_DOMAIN $NGINX_ROOT $NGINX_CONF $NGINX_CONF_SUB_BASE_DIR $NGINX_CONF_EXTRA' </etc/nginx/http.d/default.conf | sponge /etc/nginx/http.d/default.conf
 
 exec nginx -g "daemon off;"
