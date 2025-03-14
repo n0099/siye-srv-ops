@@ -6,7 +6,7 @@ services:
     volumes:
       - type: bind
         source: ./s6-rc.d
-        target: /s6-rc.extra.d
+        target: /s6-rc.extra.d/pma
       - type: volume
         target: /var/www/config.inc.php
         source: data

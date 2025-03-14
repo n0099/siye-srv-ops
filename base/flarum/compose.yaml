@@ -14,7 +14,7 @@ services:
     volumes:
       - type: bind
         source: ./s6-rc.d
-        target: /s6-rc.extra.d
+        target: /s6-rc.extra.d/flarum
       - type: volume
         source: data
         target: /mnt/flarum

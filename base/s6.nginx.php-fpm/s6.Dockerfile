@@ -14,9 +14,9 @@ RUN <<'ASH' ash -x
     tar -C / -Jxpf /tmp/s6-overlay-x86_64.tar.xz
     tar -C / -Jxpf /tmp/s6-overlay-symlinks-noarch.tar.xz
     tar -C / -Jxpf /tmp/s6-overlay-symlinks-arch.tar.xz
-    rm /tmp/s6-overlay-*.tar.xz
+    rm -v /tmp/s6-overlay-*.tar.xz
 ASH
 
 COPY ./s6-rc.d /etc/s6-overlay/s6-rc.d/
 VOLUME /s6-rc.extra.d
-ENTRYPOINT ["ash", "-euxc", "[ -d /s6-rc.extra.d ] && cp -rv /s6-rc.extra.d/. /etc/s6-overlay/s6-rc.d; /init"]
+ENTRYPOINT ["ash", "-euxc", "find /s6-rc.extra.d -mindepth 2 -maxdepth 2 -exec cp -rv {} /etc/s6-overlay/s6-rc.d +; /init"]
