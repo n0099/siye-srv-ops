@@ -1,0 +1,2 @@
+#!/command/execlineb -P
+su www-data -s /bin/ash -c "php /var/www/flarum queue:work"

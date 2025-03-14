@@ -2,21 +2,15 @@
 x-volumes: &volumes
   - type: volume
     source: files_original
-    target: /var/www/html/public/assets/filesOriginal
+    target: /var/www/public/assets/filesOriginal
   - type: volume
     source: files_webp
-    target: /var/www/html/public/assets/filesWebp
+    target: /var/www/public/assets/filesWebp
 volumes:
   files_original:
   files_webp:
 services:
-  cron:
+  s6:
     volumes: *volumes
   inotify-add:
-    volumes: *volumes
-  nginx:
-    volumes: *volumes
-  php-fpm:
-    volumes: *volumes
-  queue:
     volumes: *volumes

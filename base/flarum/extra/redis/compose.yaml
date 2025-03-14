@@ -1,0 +1,23 @@
+services:
+  s6:
+    extends:
+      file: ../../compose.yaml
+      service: s6
+    volumes:
+      - type: bind
+        source: ./s6-rc.d
+        target: /s6-rc.extra.d/flarum-queue
+  redis:
+    extends:
+      file: ../../../common.compose.yaml
+      service: common
+    image: redis:7.4.1
+    command: redis-server --save 60 1 --loglevel warning
+    volumes:
+      - type: volume
+        source: redis
+        # https://github.com/docker-library/docs/tree/master/redis#start-with-persistent-storage
+        target: /data
+volumes:
+  data:
+  redis:

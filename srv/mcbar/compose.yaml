@@ -1,5 +1,4 @@
 include:
-  - ../../base/flarum/compose.yaml
-  - ../../base/flarum/extra/sonic.compose.yaml
-  - ../../base/flarum/extra/redis.compose.yaml
+  - ../../base/flarum/extra/redis/compose.yaml
+  - ../../base/flarum/extra/sonic/compose.yaml
   - ../../base/flarum/extra/inotifyAdd/compose.yaml
