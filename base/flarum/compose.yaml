@@ -9,7 +9,7 @@ services:
         NGINX_ROOT: /var/www/public
         NGINX_CONF: |
           location / {
-              try_files  $$uri $$uri/ /index.php;
+              try_files  $$uri $$uri/ /index.php?$$query_string;
           }
     volumes:
       - type: bind
