@@ -4,10 +4,11 @@ RUN <<'ASH' ash -eux
 ASH
 
 ARG PHP_EXTENSIONS
-COPY <<EXECLINE /etc/s6-overlay/s6-rc.d/php-extensions/up
-    #!/command/execlineb -P
-    /etc/s6-overlay/s6-rc.d/php-extensions/up.sh $PHP_EXTENSIONS
-EXECLINE
+COPY ./base/s6.nginx.php-fpm/install-php-extensions.sh /install-php-extensions.sh
+RUN <<ASH ash -eux
+    /install-php-extensions.sh $PHP_EXTENSIONS
+    rm -v /install-php-extensions.sh
+ASH
 
 # https://github.com/composer/composer/issues/680
 # https://getcomposer.org/doc/03-cli.md#environment-variables
