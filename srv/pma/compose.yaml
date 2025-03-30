@@ -3,10 +3,10 @@ services:
     extends:
       file: ../../base/s6.nginx.php-fpm/compose.yaml
       service: s6
+    build:
+      context: ../..
+      dockerfile: srv/pma/Dockerfile
     volumes:
-      - type: bind
-        source: ./s6-rc.d
-        target: /s6-rc.extra.d/pma
       - type: volume
         target: /var/www/config.inc.php
         source: data

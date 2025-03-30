@@ -8,8 +8,8 @@ services:
         published: ${NGINX_PORT:?}
         host_ip: 127.0.0.1
     build:
-      context: .
-      dockerfile: ./Dockerfile
+      context: ../..
+      dockerfile: base/s6.nginx.php-fpm/Dockerfile
       args:
         CRONTAB: ${CRONTAB:-}
         PHP_INI: ${PHP_INI:-}

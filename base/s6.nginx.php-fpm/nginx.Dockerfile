@@ -20,6 +20,6 @@ ENV NGINX_SUB_BASE_DIR=$NGINX_SUB_BASE_DIR
 ARG NGINX_SUB_BASE_DIR_ALIAS
 ENV NGINX_SUB_BASE_DIR_ALIAS=$NGINX_SUB_BASE_DIR_ALIAS
 
-COPY nginx/default.conf /etc/nginx/http.d/default.conf
-COPY nginx/php-fpm.conf /etc/nginx/snippets/php-fpm.conf
-COPY nginx/sub-base-dir.conf /etc/nginx/templates/sub-base-dir.conf
+COPY ./base/s6.nginx.php-fpm/nginx/default.conf /etc/nginx/http.d/default.conf
+COPY ./base/s6.nginx.php-fpm/nginx/php-fpm.conf /etc/nginx/snippets/php-fpm.conf
+COPY ./base/s6.nginx.php-fpm/nginx/sub-base-dir.conf /etc/nginx/templates/sub-base-dir.conf
