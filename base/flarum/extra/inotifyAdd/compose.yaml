@@ -5,7 +5,6 @@ services:
       service: common
     build:
       context: .
-      dockerfile: ./Dockerfile
     volumes:
       - type: volume
         source: data

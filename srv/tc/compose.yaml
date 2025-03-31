@@ -4,6 +4,8 @@ services:
       file: ../../base/s6.nginx.php-fpm/compose.yaml
       service: s6
     build:
+      context: ../..
+      dockerfile: base/s6.nginx.php-fpm/vanilla.Dockerfile
       args:
         CRONTAB: '* * * * * php do.php'
     volumes:

@@ -5,7 +5,7 @@ services:
       service: s6
     build:
       context: ../..
-      dockerfile: ./base/flarum/Dockerfile
+      dockerfile: base/flarum/Dockerfile
       args:
         CRONTAB: '* * * * * php flarum schedule:run'
         NGINX_ROOT: /var/www/public
