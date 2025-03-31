@@ -4,9 +4,19 @@ services:
     extends:
       file: ../../../base/s6.nginx.php-fpm/compose.yaml
       service: s6
+    build:
+      context: ../../..
+      dockerfile: srv/tbm/v1/Dockerfile
     volumes:
       - type: volume
-        target: /var/www
+        target: /var/www/core.php
         source: data
+        volume:
+          subpath: core.php
+      - type: volume
+        target: /var/www/sitemaps
+        source: data
+        volume:
+          subpath: sitemaps
 volumes:
   data:
