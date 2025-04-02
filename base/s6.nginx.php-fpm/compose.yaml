@@ -21,5 +21,6 @@ services:
         NGINX_SUB_BASE_DIR_ALIAS: ${NGINX_SUB_BASE_DIR_ALIAS:-/var/www/}
     volumes:
       - type: bind
+        read_only: true
         source: ${NGINX_CONF_EXTRA_FILE:-/dev/null}
         target: /etc/nginx/extra.conf

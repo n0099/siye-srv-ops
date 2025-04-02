@@ -10,7 +10,7 @@ services:
         CRONTAB: '* * * * * php do.php'
     volumes:
       - type: volume
-        target: /var/www
         source: data
+        target: /var/www
 volumes:
   data:

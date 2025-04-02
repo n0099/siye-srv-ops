@@ -6,5 +6,6 @@ services:
       service: php-fpm
     volumes:
       - type: bind
+        read_only: true
         source: /home/www/tbm/tbclient.protobuf/tbm_php
         target: /home/www/tbm/tbclient.protobuf/tbm_php

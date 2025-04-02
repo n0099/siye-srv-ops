@@ -5,6 +5,7 @@ services:
       service: s6
     volumes:
       - type: bind
+        read_only: true
         source: ./s6-rc.d
         target: /s6-rc.extra.d/flarum-queue
   redis:

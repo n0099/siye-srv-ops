@@ -8,8 +8,9 @@ services:
       dockerfile: srv/pma/Dockerfile
     volumes:
       - type: volume
-        target: /var/www/config.inc.php
+        read_only: true
         source: data
+        target: /var/www/config.inc.php
         volume:
           subpath: config.inc.php
 volumes:
