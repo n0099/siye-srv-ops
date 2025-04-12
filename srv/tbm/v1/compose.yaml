@@ -5,8 +5,7 @@ services:
       file: ../../../base/s6.nginx.php-fpm/compose.yaml
       service: s6
     build:
-      context: ../../..
-      dockerfile: srv/tbm/v1/Dockerfile
+      dockerfile: $PWD/Dockerfile
     volumes:
       - type: volume
         read_only: true

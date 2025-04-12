@@ -4,7 +4,6 @@ services:
       file: ../s6.nginx.php-fpm/compose.yaml
       service: s6
     build:
-      context: ../..
       dockerfile: base/flarum/Dockerfile
       args:
         CRONTAB: '* * * * * php flarum schedule:run'
