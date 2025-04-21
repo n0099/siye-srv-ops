@@ -4,12 +4,17 @@ services:
       file: ../../base/s6.nginx.php-fpm/compose.yaml
       service: s6
     build:
-      dockerfile: base/s6.nginx.php-fpm/vanilla.Dockerfile
+      dockerfile: $PWD/Dockerfile
       args:
         CRONTAB: '* * * * * php do.php'
     volumes:
+      - type: bind
+        read_only: true
+        source: ./s6-rc.d
+        target: /s6-rc.extra.d/tc
       - type: volume
+        read_only: true
         source: data
-        target: /var/www
+        target: /mnt/tc
 volumes:
   data:

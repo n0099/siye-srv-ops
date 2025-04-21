@@ -1,0 +1,2 @@
+#!/command/execlineb -P
+elglob contents /mnt/tc/* cp -rv $contents /var/www

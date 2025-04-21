@@ -6,7 +6,7 @@ cd /var/www
 
 # subdirs should be mounted as `services.*.volumes.volume.subpath` in `compose.yaml`
 find /mnt/flarum -mindepth 1 -maxdepth 1 -type f -exec cp -v {} . +
-chown www-data: -R .
+chown -R www-data: .
 
 su www-data -s /bin/ash -c 'composer install --no-interaction --no-dev'
 
