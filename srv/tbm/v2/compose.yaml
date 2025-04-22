@@ -1,11 +1,46 @@
 name: tbm-v2
 services:
-  php-fpm:
+  be:
     extends:
-      file: ../../../base/php-fpm/compose.yaml
-      service: php-fpm
+      file: ../../../base/s6.nginx.php-fpm/compose.yaml
+      service: s6
+    build:
+      dockerfile: $PWD/be.Dockerfile
     volumes:
-      - type: bind
-        read_only: true
-        source: /home/www/tbm/tbclient.protobuf/tbm_php
-        target: /home/www/tbm/tbclient.protobuf/tbm_php
+      - type: volume
+        source: data
+        target: /var/www/be/.env.local
+        volume:
+          subpath: be/.env.local
+  fe:
+    extends:
+      file: ../../../base/common.compose.yaml
+      service: common
+    build:
+      dockerfile: $PWD/fe.Dockerfile
+    init: true # https://github.com/nodejs/docker-node/blob/655ca3407c7fdc5544a385242a7c0805115cd280/docs/BestPractices.md#handling-kernel-signals
+    env_file: ./fe.env
+    ports:
+      - target: 3000
+        published: 3001
+        host_ip: 127.0.0.1
+  crawler:
+    extends:
+      file: ../../../base/common.compose.yaml
+      service: common
+    build:
+      dockerfile: $PWD/crawler.Dockerfile
+    init: false # https://stackoverflow.com/questions/78096400/is-useconsolelifetime-included-by-default-in-net-generic-host-host-createdefau https://learn.microsoft.com/en-us/dotnet/core/extensions/generic-host#host-shutdown
+    volumes:
+      - type: volume
+        source: data
+        target: /artifacts/appsettings.Production.json
+        volume:
+          subpath: crawler/appsettings.Production.json
+  sonic:
+    extends:
+      file: ../../../base/flarum/extra/sonic/compose.yaml
+      service: sonic
+volumes:
+  data:
+  sonic:
