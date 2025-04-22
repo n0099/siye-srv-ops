@@ -5,6 +5,7 @@ services:
       service: common
     build:
       context: .
+    init: false # https://superuser.com/questions/1829830/behavior-of-sigint-with-bash
     volumes:
       - type: volume
         source: data

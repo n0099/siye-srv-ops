@@ -4,6 +4,7 @@ services:
       file: ../../../common.compose.yaml
       service: common
     image: valeriansaliou/sonic:v1.4.9
+    init: false # https://github.com/valeriansaliou/sonic/blob/c4329c700edfcd97cb04321d89dfd1ddfe7d6b82/src/tasker/shutdown.rs#L75
     volumes:
       - type: volume
         source: sonic

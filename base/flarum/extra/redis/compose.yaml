@@ -14,6 +14,7 @@ services:
       service: common
     image: redis:7.4.1
     command: redis-server --save 60 1 --loglevel warning
+    init: false # https://redis.io/docs/latest/operate/oss_and_stack/reference/signals/
     volumes:
       - type: volume
         source: redis
