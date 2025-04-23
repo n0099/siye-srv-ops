@@ -3,6 +3,8 @@ RUN <<'ASH' ash -eux
     apk add --no-cache php83 php83-fpm php83-opcache php83-zip composer
 ASH
 
+ENV COMPOSER_HOME=/tmp/.composer
+
 ARG PHP_EXTENSIONS
 COPY ./base/s6.nginx.php-fpm/install-php-extensions.sh /install-php-extensions.sh
 RUN <<ASH ash -eux
@@ -38,6 +40,8 @@ output_buffering = 4096
 	max_execution_time = 60
 	post_max_size = 16M
 	upload_max_filesize = 16M
+	; https://stackoverflow.com/questions/77426003/symfony-nginx-upstream-sent-too-big-header-while-reading-response-header-fro/79031358#79031358
+	fastcgi.logging = Off
 INI
 
 COPY <<-INI /etc/php83/php-cli.ini
