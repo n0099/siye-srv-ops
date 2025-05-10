@@ -56,4 +56,8 @@ COPY <<-'INI' /etc/php83/php-fpm.d/www.extra.conf
 	listen = /run/php-fpm.sock
 	listen.owner = www-data
 	listen.group = www-data
+	pm.max_children = 50
+	pm.start_servers = 5
+	pm.min_spare_servers = 5
+	pm.max_spare_servers = 25
 INI
