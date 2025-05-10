@@ -18,7 +18,7 @@ ASH
 FROM node:23-alpine
 
 WORKDIR /artifacts
-COPY --from=build open-tbm/fe/.output .
+COPY --from=build open-tbm/fe/.output/ ./
 RUN <<'ASH' ash -eux
     chown -R node: .
 ASH

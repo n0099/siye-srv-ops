@@ -18,4 +18,4 @@ COPY <<-INI /etc/php83/conf.d/03_Dockerfile_var.ini
 	$PHP_INI
 INI
 
-COPY ./base/s6.nginx.php-fpm/php /etc/php83
+COPY ./base/s6.nginx.php-fpm/php/ /etc/php83/

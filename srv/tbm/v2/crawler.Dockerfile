@@ -9,7 +9,7 @@ ASH
 
 FROM mcr.microsoft.com/dotnet/runtime:9.0-alpine
 
-COPY --from=build open-tbm/c#/crawler/publish /artifacts
+COPY --from=build open-tbm/c#/crawler/publish/ /artifacts/
 WORKDIR /artifacts
 
 RUN <<'ASH' ash -eux

@@ -20,4 +20,4 @@ ENV NGINX_SUB_BASE_DIR=$NGINX_SUB_BASE_DIR
 ARG NGINX_SUB_BASE_DIR_ALIAS
 ENV NGINX_SUB_BASE_DIR_ALIAS=$NGINX_SUB_BASE_DIR_ALIAS
 
-COPY ./base/s6.nginx.php-fpm/nginx /etc/nginx
+COPY ./base/s6.nginx.php-fpm/nginx/ /etc/nginx/

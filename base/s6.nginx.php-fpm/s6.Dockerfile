@@ -17,5 +17,5 @@ RUN <<'ASH' ash -x
     rm -v /tmp/s6-overlay-*.tar.xz
 ASH
 
-COPY ./base/s6.nginx.php-fpm/s6-rc.d /etc/s6-overlay/s6-rc.d/
+COPY ./base/s6.nginx.php-fpm/s6-rc.d/ /etc/s6-overlay/s6-rc.d/
 ENTRYPOINT ["ash", "-euxc", "[ -d /s6-rc.extra.d ] && find /s6-rc.extra.d -mindepth 2 -maxdepth 2 -exec cp -rv {} /etc/s6-overlay/s6-rc.d +; /init"]
