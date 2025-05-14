@@ -1,8 +1,8 @@
 # syntax=docker/dockerfile:1
 FROM alpine:3.21
 
-RUN <<'ASH' ash -eux
-    apk add --no-cache inotify-tools libwebp-tools bash
+RUN --mount=type=cache,target=/etc/apk/cache <<'ASH' ash -eux
+    apk add --update-cache inotify-tools libwebp-tools bash
     # same with ../../../s6.nginx.php-fpm/Dockerfile
     adduser -u 82 -h /var/www -s /sbin/nologin -S -G www-data www-data
 ASH
