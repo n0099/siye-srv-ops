@@ -9,7 +9,8 @@ ASH
 WORKDIR open-tbm/fe
 COPY ./fe.env .env
 
-RUN <<'ASH' ash -eux
+# https://yarnpkg.com/configuration/yarnrc#globalFolder
+RUN --mount=type=cache,target=/root/.yarn/berry <<'ASH' ash -eux
     corepack enable
     yarn install --immutable
     yarn build

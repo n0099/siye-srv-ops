@@ -3,7 +3,7 @@ RUN --mount=type=cache,target=/etc/apk/cache <<'ASH' ash -eux
     apk add --update-cache php83 php83-fpm php83-opcache php83-zip composer
 ASH
 
-ENV COMPOSER_HOME=/tmp/.composer
+ENV COMPOSER_HOME=/tmp/composer
 
 COPY ./base/s6.nginx.php-fpm/php/ /etc/php83/
 

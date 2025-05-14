@@ -30,5 +30,8 @@ services:
         target: /var/www/storage/sessions
         volume:
           subpath: storage/sessions
+      - type: bind
+        source: /tmp/composer
+        target: /tmp/composer
 volumes:
   data:

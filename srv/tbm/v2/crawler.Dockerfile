@@ -1,7 +1,8 @@
 # syntax=docker/dockerfile:1
 FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine AS build
 
-RUN <<'ASH' ash -eux
+# https://learn.microsoft.com/en-us/nuget/consume-packages/managing-the-global-packages-and-cache-folders
+RUN --mount=type=cache,target=/root/.nuget/packages <<'ASH' ash -eux
     git clone --recurse-submodules --depth 1 https://github.com/n0099/open-tbm
     cd open-tbm/c#/crawler
     dotnet publish -p:PublishProfile=FolderProfile -r linux-musl-x64
