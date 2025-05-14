@@ -5,12 +5,7 @@ ASH
 
 ENV COMPOSER_HOME=/tmp/.composer
 
-ARG PHP_EXTENSIONS
-COPY ./base/s6.nginx.php-fpm/install-php-extensions.sh /install-php-extensions.sh
-RUN <<ASH ash -eux
-    /install-php-extensions.sh $PHP_EXTENSIONS
-    rm -v /install-php-extensions.sh
-ASH
+COPY ./base/s6.nginx.php-fpm/php/ /etc/php83/
 
 ARG PHP_INI
 COPY <<-INI /etc/php83/conf.d/03_Dockerfile_var.ini
@@ -18,4 +13,9 @@ COPY <<-INI /etc/php83/conf.d/03_Dockerfile_var.ini
 	$PHP_INI
 INI
 
-COPY ./base/s6.nginx.php-fpm/php/ /etc/php83/
+ARG PHP_EXTENSIONS
+COPY ./base/s6.nginx.php-fpm/install-php-extensions.sh /install-php-extensions.sh
+RUN <<ASH ash -eux
+    /install-php-extensions.sh $PHP_EXTENSIONS
+    rm -v /install-php-extensions.sh
+ASH

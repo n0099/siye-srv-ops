@@ -11,4 +11,5 @@ WORKDIR /var/www
 INCLUDE ./s6.Dockerfile
 INCLUDE ./nginx.Dockerfile
 INCLUDE ./php-fpm.Dockerfile
+INCLUDE ./nginx.env.Dockerfile
 INCLUDE ./cron.Dockerfile

@@ -6,18 +6,4 @@ RUN <<'ASH' ash -eux
     rm -rv /var/www/localhost
 ASH
 
-# https://docs.docker.com/build/building/variables/#env-usage-example
-ARG NGINX_DOMAIN
-ENV NGINX_DOMAIN=$NGINX_DOMAIN
-ARG NGINX_ROOT
-ENV NGINX_ROOT=$NGINX_ROOT
-
-# used by ./nginx.conf
-ARG NGINX_CONF
-ENV NGINX_CONF=$NGINX_CONF
-ARG NGINX_SUB_BASE_DIR
-ENV NGINX_SUB_BASE_DIR=$NGINX_SUB_BASE_DIR
-ARG NGINX_SUB_BASE_DIR_ALIAS
-ENV NGINX_SUB_BASE_DIR_ALIAS=$NGINX_SUB_BASE_DIR_ALIAS
-
 COPY ./base/s6.nginx.php-fpm/nginx/ /etc/nginx/
