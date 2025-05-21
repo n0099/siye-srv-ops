@@ -9,7 +9,6 @@ RUN --mount=type=cache,target=/etc/apk/cache \
     chown -R www-data: .
     cd be
     su www-data -s /bin/ash -c 'composer install --no-interaction'
-    su www-data -s /bin/ash -c 'composer dump-env prod'
 ASH
 
 WORKDIR /var/www/be

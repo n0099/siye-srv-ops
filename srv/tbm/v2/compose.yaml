@@ -7,6 +7,10 @@ services:
     build:
       dockerfile: $PWD/be.Dockerfile
     volumes:
+      - type: bind
+        read_only: true
+        source: ./s6-rc.d
+        target: /s6-rc.extra.d/dump-env
       - type: volume
         source: data
         target: /var/www/be/.env.local

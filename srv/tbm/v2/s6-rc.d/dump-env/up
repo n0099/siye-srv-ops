@@ -1,0 +1,2 @@
+#!/command/execlineb -P
+su www-data -s /bin/ash -c "composer -d /var/www/be dump-env prod"
