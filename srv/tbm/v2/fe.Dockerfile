@@ -13,7 +13,7 @@ COPY ./fe.env .env
 RUN --mount=type=cache,target=/root/.yarn/berry <<'ASH' ash -eux
     corepack enable
     yarn install --immutable
-    yarn build
+    NODE_OPTIONS=--max-old-space-size=4096 yarn build
 ASH
 
 FROM node:23-alpine
