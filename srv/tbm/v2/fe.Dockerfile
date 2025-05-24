@@ -3,7 +3,7 @@ FROM node:23-alpine AS build
 
 RUN --mount=type=cache,target=/etc/apk/cache <<'ASH' ash -eux
     apk add --update-cache git
-    git clone --depth 1 https://github.com/n0099/open-tbm
+    git clone --depth 1 --branch prod https://github.com/n0099/open-tbm
 ASH
 
 WORKDIR open-tbm/fe
