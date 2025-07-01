@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM node:23-alpine AS build
+FROM node:24-alpine AS build
 
 RUN --mount=type=cache,target=/etc/apk/cache <<'ASH' ash -eux
     apk add --update-cache git
@@ -16,7 +16,7 @@ RUN --mount=type=cache,target=/root/.yarn/berry <<'ASH' ash -eux
     NODE_OPTIONS=--max-old-space-size=4096 yarn build
 ASH
 
-FROM node:23-alpine
+FROM node:24-alpine
 
 WORKDIR /artifacts
 COPY --from=build open-tbm/fe/.output/ ./
@@ -26,4 +26,4 @@ ASH
 
 USER node
 ENTRYPOINT ["node"]
-CMD ["--heapsnapshot-near-heap-limit", "5", "--enable-source-maps", "server/index.mjs"]
+CMD ["--enable-source-maps", "server/index.mjs"]
