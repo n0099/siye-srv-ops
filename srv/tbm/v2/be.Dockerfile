@@ -8,7 +8,7 @@ RUN --mount=type=cache,target=/etc/apk/cache \
     git clone --recurse-submodules --depth 1 --branch prod https://github.com/n0099/open-tbm .
     chown -R www-data: .
     cd be
-    su www-data -s /bin/ash -c 'composer install --no-interaction'
+    su www-data -s /bin/ash -c 'composer install --no-interaction --optimize-autoloader'
 ASH
 
 WORKDIR /var/www/be

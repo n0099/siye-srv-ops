@@ -8,7 +8,7 @@ cd /var/www
 find /mnt/flarum -mindepth 1 -maxdepth 1 -type f -exec cp -v {} . +
 chown -R www-data: .
 
-su www-data -s /bin/ash -c 'composer install --no-interaction --no-dev'
+su www-data -s /bin/ash -c 'composer install --no-interaction --no-dev --optimize-autoloader'
 
 # https://docs.flarum.org/extend/assets/
 # https://docs.flarum.org/console/#assetspublish
