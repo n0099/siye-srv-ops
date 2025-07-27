@@ -1,5 +1,5 @@
 # syntax=devthefuture/dockerfile-x
-FROM alpine:3.21
+FROM alpine:3.22
 
 RUN <<'ASH' ash -eux
     # https://stackoverflow.com/questions/66507234/docker-volume-mount-and-permissions-www-data-on-host-33-becomes-xfs-33-in-a

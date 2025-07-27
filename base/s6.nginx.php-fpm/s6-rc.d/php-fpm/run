@@ -1,2 +1,2 @@
 #!/command/execlineb -P
-php-fpm83 --nodaemonize
+php-fpm84 --nodaemonize

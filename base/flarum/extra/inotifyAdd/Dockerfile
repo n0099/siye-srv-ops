@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM alpine:3.21
+FROM alpine:3.22
 
 RUN --mount=type=cache,target=/etc/apk/cache <<'ASH' ash -eux
     apk add --update-cache inotify-tools libwebp-tools bash
