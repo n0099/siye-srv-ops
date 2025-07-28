@@ -5,4 +5,4 @@ for i do
     set -- "$@" "php84-${i}"
     shift
 done
-apk add --no-cache "$@"
+apk add --update-cache "$@"
