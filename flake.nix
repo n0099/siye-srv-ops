@@ -8,6 +8,7 @@
         ./zfs.nix
         ./march.nix
         ./users.nix
+        ./nginx.nix
         ./docker.nix
         "${base.inputs.nixpkgs.outPath}/nixos/modules/profiles/hardened.nix"
       ];
