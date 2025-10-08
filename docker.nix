@@ -6,8 +6,12 @@ lib.mkMerge [
     virtualisation.docker = {
       enable = true;
       package = pkgs.docker_28;
-      storageDriver = "zfs";
       autoPrune.enable = true;
+      # https://old.reddit.com/r/zfs/comments/17nlapu/docker_on_zfs_best_practices/
+      # https://github.com/openzfs/zfs/issues/15581
+      # https://blog.chlc.cc/p/docker-and-zfs-a-tough-pair/
+      # https://github.com/openzfs/zfs/pull/9600
+      storageDriver = "overlay2";
     };
   }
   {

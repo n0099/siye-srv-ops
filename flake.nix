@@ -11,5 +11,6 @@
         ./docker.nix
         "${base.inputs.nixpkgs.outPath}/nixos/modules/profiles/hardened.nix"
       ];
+      home-manager = [ ./home/n0099.nix ];
     });
 }
