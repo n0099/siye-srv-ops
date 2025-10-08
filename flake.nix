@@ -5,7 +5,7 @@
     (base.outputs.withModules inputs {
       nixos = [
         ./configuration.nix
-        ./zfs.nix
+        ./system.nix
         ./march.nix
         ./nginx.nix
         ./docker.nix
