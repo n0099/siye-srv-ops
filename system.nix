@@ -11,4 +11,16 @@ lib.mkMerge [
   {
     services.qemuGuest.enable = true;
   }
+  {
+    services = {
+      mysql = {
+        enable = true;
+        package = pkgs.mysql80;
+      };
+      postgresql = {
+        enable = true;
+        package = pkgs.postgresql;
+      };
+    };
+  }
 ]

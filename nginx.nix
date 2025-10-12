@@ -1,6 +1,16 @@
 { lib, ... }:
 
 let
+  proxyPassPortsKeyByUri = {
+    "simcity.moe" = 9003;
+    "mcbar.club" = 9004;
+    "n0099.net/v" = 9005;
+    "n0099.net/tc" = 9006;
+    "n0099.net/pma" = 9007;
+    "n0099.net/tbm/v1" = 9008;
+    "n0099.net/tbm/be" = 9009;
+    "n0099.net/tbm" = 3001;
+  };
   certByDomain =
     domain:
     let
@@ -13,7 +23,15 @@ let
     };
 in
 {
+  n0099.nginx.baseUrls = lib.attrNames proxyPassPortsKeyByUri;
   services.nginx = {
+    appendHttpConfig = ''
+      map $host$uri $proxy_pass_port {
+        ${lib.concatMapAttrsStringSep "\n" (
+          uri: port: "~^${lib.escapeRegex uri}/ ${builtins.toString port};"
+        ) proxyPassPortsKeyByUri}
+      }
+    '';
     virtualHosts = {
       "z.n0099.net" = (certByDomain "n0099.net") // {
         locations = {
