@@ -41,4 +41,15 @@ lib.mkMerge [
       groups.dockremap = { };
     };
   }
+  {
+    # https://discourse.nixos.org/t/docker-container-not-resolving-to-host/30259/9
+    networking.firewall = {
+      extraCommands = ''
+        iptables -I nixos-fw 1 -i br+ -j ACCEPT
+      '';
+      extraStopCommands = ''
+        iptables -D nixos-fw -i br+ -j ACCEPT
+      '';
+    };
+  }
 ]
