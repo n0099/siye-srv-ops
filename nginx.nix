@@ -35,28 +35,6 @@ in
     ) proxyPassPortsByUrl
   );
   services.nginx = {
-    appendHttpConfig = ''
-      map $host$uri $proxy_pass_port {
-        ${lib.concatStringsSep "\n" (
-          lib.flatten (
-            lib.mapAttrsToList (
-              domain: baseUrlsKeyByPort:
-              lib.concatMap (
-                baseUrlKeyByPort:
-                lib.mapAttrsToList (
-                  baseUrl: port:
-                  let
-                    hostUrlPattern = lib.escapeRegex "${domain}${baseUrl}";
-                    traillingSlash = if baseUrl == "/" then "" else "/";
-                  in
-                  "~^${hostUrlPattern}${traillingSlash} ${builtins.toString port};"
-                ) baseUrlKeyByPort
-              ) baseUrlsKeyByPort
-            ) proxyPassPortsByUrl
-          )
-        )}
-      }
-    '';
     virtualHosts = lib.mkMerge [
       (lib.genAttrs [
         "mcbar.club"
@@ -66,19 +44,17 @@ in
       (lib.mapAttrs (_: baseUrlsKeyByPort: {
         locations = lib.mkMerge (
           lib.map (lib.mapAttrs (
-            _: _: { proxyPass = "http://127.0.0.1:$proxy_pass_port"; }
+            _: port: { proxyPass = "http://127.0.0.1:${builtins.toString port}"; }
           )) baseUrlsKeyByPort
         );
       }) proxyPassPortsByUrl)
       {
         "z.n0099.net" = (certByDomain "n0099.net") // {
           locations = {
-            "/" = {
-              extraConfig = ''
-                # https://zulip.readthedocs.io/en/9.4/production/reverse-proxies.html#nginx-configuration
-                proxy_buffering off;
-              '';
-            };
+            "/".extraConfig = ''
+              # https://zulip.readthedocs.io/en/9.4/production/reverse-proxies.html#nginx-configuration
+              proxy_buffering off;
+            '';
             "/error/".root = "/srv/www/n0099";
           };
           extraConfig = ''
