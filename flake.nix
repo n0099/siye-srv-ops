@@ -8,6 +8,7 @@
         ./system.nix
         ./march.nix
         ./nginx.nix
+        ./rdbms.nix
         ./docker.nix
         ./ipv6.nix
         "${base.inputs.nixpkgs.outPath}/nixos/modules/profiles/hardened.nix"
