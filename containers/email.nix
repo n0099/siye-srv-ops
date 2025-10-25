@@ -25,6 +25,12 @@
           postfix = {
             sslCert = "${certDir}/cert.pem";
             sslKey = "${certDir}/privkey.pem";
+            config = {
+              # https://utcc.utoronto.ca/~cks/space/blog/spam/TLSExternalTypes-2025-05
+              lmtp_tls_protocols = ">=TLSv1.3";
+              smtp_tls_protocols = ">=TLSv1.3";
+              smtpd_tls_protocols = ">=TLSv1.2";
+            };
           };
           dovecot2 = {
             sslServerCert = "${certDir}/cert.pem";
@@ -32,6 +38,7 @@
             extraConfig = ''
               # https://doc.dovecot.org/2.3/configuration_manual/dovecot_ssl_configuration/
               ssl = required
+              ssl_min_protocol = TLSv1.3
             '';
           };
         };
