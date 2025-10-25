@@ -9,7 +9,11 @@
         isReadOnly = false;
       };
       forwardPorts = lib.map (port: lib.genAttrs [ "containerPort" "hostPort" ] (_: port)) [ 25 ];
-      config.services.postfix.enable = true;
+      config.services = {
+        # https://brokkr.net/2018/06/04/setting-up-postfix-and-dovecot-slowly-and-properly/
+        postfix.enable = true;
+        dovecot2.enable = true;
+      };
     }
     (
       let
@@ -17,9 +21,19 @@
       in
       {
         bindMounts.${certDir}.isReadOnly = true;
-        config.services.postfix = {
-          sslCert = "${certDir}/cert.pem";
-          sslKey = "${certDir}/privkey.pem";
+        config.services = {
+          postfix = {
+            sslCert = "${certDir}/cert.pem";
+            sslKey = "${certDir}/privkey.pem";
+          };
+          dovecot2 = {
+            sslServerCert = "${certDir}/cert.pem";
+            sslServerKey = "${certDir}/privkey.pem";
+            extraConfig = ''
+              # https://doc.dovecot.org/2.3/configuration_manual/dovecot_ssl_configuration/
+              ssl = required
+            '';
+          };
         };
       }
     )
@@ -97,5 +111,93 @@
         config.services.postfix.config.smtp_sasl_password_maps = "texthash:${sasl}"; # https://discourse.nixos.org/t/porting-my-postfix-gmail-smtp-to-nixos/30286/12
       }
     )
+    (
+      let
+        lmtpSocket = "/run/dovecot-lmtp";
+      in
+      {
+        config.services = {
+          postfix.config.virtual_transport = "lmtp:unix:${lmtpSocket}";
+          dovecot2 = {
+            enableLmtp = true;
+            extraConfig = ''
+              service lmtp {
+                unix_listener ${lmtpSocket} {
+                  mode = 0600
+                  user = postfix
+                  group = postfix
+                }
+              }
+            '';
+          };
+        };
+      }
+    )
+    {
+      config.services.dovecot2 = {
+        mailLocation = "mdbox:/var/mail/%u/mdbox";
+        extraConfig = ''
+          auth_mechanisms = plain # https://doc.dovecot.org/2.3/configuration_manual/authentication/#authentication-in-proxies-and-directors
+        '';
+      };
+    }
+    {
+      bindMounts."/var/lib/dhparams/dovecot2.pem".isReadOnly = false;
+      config = {
+        services.dovecot2.enableDHE = true;
+        systemd.services.dhparams-gen-dovecot2.requiredBy = [ "dovecot2.service" ]; # https://github.com/NixOS/nixpkgs/pull/453845
+      };
+    }
+    (
+      let
+        dbConnect = config.age.secrets."dovecot.db.connect".path;
+      in
+      {
+        bindMounts = {
+          "${dbConnect}".isReadOnly = true;
+          "/run/mysqld/mysqld.sock".isReadOnly = true;
+        };
+        config =
+          let
+            sqlArgsFile = "dovecot-sql.conf.ext";
+          in
+          {
+            services.dovecot2.extraConfig = ''
+              passdb {
+                driver = sql
+                args = ${sqlArgsFile}
+              }
+              userdb {
+                driver = sql
+                args = ${sqlArgsFile}
+              }'';
+            environment.etc."dovecot/${sqlArgsFile}".text = ''
+              !include ${dbConnect}
+              driver = mysql
+              default_pass_scheme = ARGON2ID
+              user_query = \
+                SELECT username \
+                FROM dovecot_users WHERE username = '%n' AND domain = '%d'
+              password_query = \
+                SELECT username, domain, password \
+                FROM dovecot_users WHERE username = '%n' AND domain = '%d'
+              iterate_query = SELECT username AS user FROM dovecot_users
+            '';
+          };
+      }
+    )
+    {
+      config.services.dovecot2 = {
+        # https://doc.dovecot.org/2.3/settings/core/
+        mailPlugins.perProtocol.lmtp.enable = [ "sieve" ];
+        extraConfig = ''
+          service managesieve-login {
+            inet_listener sieve {
+              port = 4190
+            }
+          }
+        '';
+      };
+    }
   ];
 }
