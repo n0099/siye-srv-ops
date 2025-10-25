@@ -4,7 +4,7 @@
   containers.email = lib.mkMerge [
     {
       subnetPrefix = "172.16.0.";
-      bindMounts."/var/mail" = {
+      bindMounts."/var/spool/mail" = {
         hostPath = "/srv/mail";
         isReadOnly = false;
       };
@@ -174,7 +174,18 @@
       in
       lib.mkMerge [
         { bindMounts.${mysqlSocket}.isReadOnly = true; }
-        { config.services.roundcube.database.host = mysqlSocket; }
+        (
+          let
+            passwordFile = config.age.secrets."roundcube.db.password".path;
+          in
+          {
+            bindMounts."${passwordFile}".isReadOnly = true;
+            config.services.roundcube.database = {
+              host = "unix(${mysqlSocket})";
+              inherit passwordFile;
+            };
+          }
+        )
         (
           let
             dbConnect = config.age.secrets."dovecot.db.connect".path;
@@ -222,7 +233,6 @@
             database = {
               dbname = "email";
               username = "email";
-              passwordFile = config.age.secrets."email.db.password".path;
             };
             hostName = "n0099.net";
             extraConfig = ''
@@ -241,35 +251,34 @@
             forceSSL = false;
             enableACME = false;
           };
-          services.phpfpm.pools.roundcube.phpPackage = pkgs.php84; # https://github.com/NixOS/nixpkgs/blob/c8aa8cc00a5cb57fada0851a038d35c08a36a2bb/nixos/modules/services/mail/roundcube.nix#L264
+          services.phpfpm.pools.roundcube.phpPackage = lib.mkForce pkgs.php84; # https://github.com/NixOS/nixpkgs/blob/c8aa8cc00a5cb57fada0851a038d35c08a36a2bb/nixos/modules/services/mail/roundcube.nix#L264
           systemd.services = {
             # https://github.com/NixOS/nixpkgs/blob/c8aa8cc00a5cb57fada0851a038d35c08a36a2bb/nixos/modules/services/mail/roundcube.nix#L274
             roundcube-setup.enable = false;
-            roundcube-gen-des-key = {
+            roundcube-generate-des-key = {
               # https://github.com/NixOS/nixpkgs/blob/c8aa8cc00a5cb57fada0851a038d35c08a36a2bb/nixos/modules/services/mail/roundcube.nix#L267-L272
               before = [ "phpfpm-roundcube.service" ];
               requiredBy = [ "phpfpm-roundcube.service" ];
-              enableStrictShellChecks = true;
               serviceConfig = {
                 # https://github.com/NixOS/nixpkgs/blob/c8aa8cc00a5cb57fada0851a038d35c08a36a2bb/nixos/modules/services/mail/roundcube.nix#L308-L314
                 Type = "oneshot";
                 User = "nginx";
                 StateDirectory = "roundcube";
                 StateDirectoryMode = "0700";
+              };
+            }
+            // (
+              let
+                path = "/var/lib/roundcube/des_key";
+              in
+              {
+                script = ''
+                  # https://github.com/NixOS/nixpkgs/blob/c8aa8cc00a5cb57fada0851a038d35c08a36a2bb/nixos/modules/services/mail/roundcube.nix#L299-L304
+                  base64 /dev/urandom | head -c 24 > ${path}
+                '';
+                unitConfig.ConditionFileNotEmpty = "!${path}";
               }
-              // (
-                let
-                  path = "/var/lib/roundcube/des_key";
-                in
-                {
-                  script = ''
-                    # https://github.com/NixOS/nixpkgs/blob/c8aa8cc00a5cb57fada0851a038d35c08a36a2bb/nixos/modules/services/mail/roundcube.nix#L299-L304
-                    base64 /dev/urandom | head -c 24 > ${path}
-                  '';
-                  unitConfig.ConditionFileNotEmpty = path;
-                }
-              );
-            };
+            );
           };
         };
     }
