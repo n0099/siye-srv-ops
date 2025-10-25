@@ -206,5 +206,67 @@
         '';
       };
     }
+    {
+      config =
+        { pkgs, ... }@container:
+
+        {
+          services.roundcube = rec {
+            enable = true;
+            database = {
+              host = "${config.containers.email.subnetPrefix}.1";
+              dbname = "email";
+              username = "email";
+              passwordFile = config.age.secrets."email.db.password".path;
+            };
+            hostName = "n0099.net";
+            extraConfig = ''
+              $config['db_dsnw'] = preg_replace('#^pgsql://#', 'mysql://', $config['db_dsnw']);
+              $config['db_prefix'] = 'roundcube_';
+              $config['imap_host'] = 'tls://localhost:143';
+              $config['imap_conn_options']['ssl']['peer_name'] ='${hostName}';
+              $config['smtp_host'] = 'tls://localhost:587';
+              $config['smtp_conn_options']['ssl']['peer_name'] ='${hostName}';
+              $config['support_url'] = 'https://z.n0099.net';
+              $config['product_name'] = '四叶伊美尔';
+            '';
+          };
+          services.nginx.virtualHosts.${container.config.services.roundcube.hostName} = {
+            # https://github.com/NixOS/nixpkgs/blob/c8aa8cc00a5cb57fada0851a038d35c08a36a2bb/nixos/modules/services/mail/roundcube.nix#L180-L181
+            forceSSL = false;
+            enableACME = false;
+          };
+          services.phpfpm.pools.roundcube.phpPackage = pkgs.php84; # https://github.com/NixOS/nixpkgs/blob/c8aa8cc00a5cb57fada0851a038d35c08a36a2bb/nixos/modules/services/mail/roundcube.nix#L264
+          systemd.services = {
+            # https://github.com/NixOS/nixpkgs/blob/c8aa8cc00a5cb57fada0851a038d35c08a36a2bb/nixos/modules/services/mail/roundcube.nix#L274
+            roundcube-setup.enable = false;
+            roundcube-gen-des-key = {
+              # https://github.com/NixOS/nixpkgs/blob/c8aa8cc00a5cb57fada0851a038d35c08a36a2bb/nixos/modules/services/mail/roundcube.nix#L267-L272
+              before = [ "phpfpm-roundcube.service" ];
+              requiredBy = [ "phpfpm-roundcube.service" ];
+              enableStrictShellChecks = true;
+              serviceConfig = {
+                # https://github.com/NixOS/nixpkgs/blob/c8aa8cc00a5cb57fada0851a038d35c08a36a2bb/nixos/modules/services/mail/roundcube.nix#L308-L314
+                Type = "oneshot";
+                User = "nginx";
+                StateDirectory = "roundcube";
+                StateDirectoryMode = "0700";
+              }
+              // (
+                let
+                  path = "/var/lib/roundcube/des_key";
+                in
+                {
+                  script = ''
+                    # https://github.com/NixOS/nixpkgs/blob/c8aa8cc00a5cb57fada0851a038d35c08a36a2bb/nixos/modules/services/mail/roundcube.nix#L299-L304
+                    base64 /dev/urandom | head -c 24 > ${path}
+                  '';
+                  unitConfig.ConditionFileNotEmpty = path;
+                }
+              );
+            };
+          };
+        };
+    }
   ];
 }
