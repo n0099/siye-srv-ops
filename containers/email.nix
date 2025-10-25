@@ -155,44 +155,6 @@
         systemd.services.dhparams-gen-dovecot2.requiredBy = [ "dovecot2.service" ]; # https://github.com/NixOS/nixpkgs/pull/453845
       };
     }
-    (
-      let
-        dbConnect = config.age.secrets."dovecot.db.connect".path;
-      in
-      {
-        bindMounts = {
-          "${dbConnect}".isReadOnly = true;
-          "/run/mysqld/mysqld.sock".isReadOnly = true;
-        };
-        config =
-          let
-            sqlArgsFile = "dovecot-sql.conf.ext";
-          in
-          {
-            services.dovecot2.extraConfig = ''
-              passdb {
-                driver = sql
-                args = ${sqlArgsFile}
-              }
-              userdb {
-                driver = sql
-                args = ${sqlArgsFile}
-              }'';
-            environment.etc."dovecot/${sqlArgsFile}".text = ''
-              !include ${dbConnect}
-              driver = mysql
-              default_pass_scheme = ARGON2ID
-              user_query = \
-                SELECT username \
-                FROM dovecot_users WHERE username = '%n' AND domain = '%d'
-              password_query = \
-                SELECT username, domain, password \
-                FROM dovecot_users WHERE username = '%n' AND domain = '%d'
-              iterate_query = SELECT username AS user FROM dovecot_users
-            '';
-          };
-      }
-    )
     {
       config.services.dovecot2 = {
         # https://doc.dovecot.org/2.3/settings/core/
@@ -206,6 +168,50 @@
         '';
       };
     }
+    (
+      let
+        mysqlSocket = "/run/mysqld/mysqld.sock";
+      in
+      lib.mkMerge [
+        { bindMounts.${mysqlSocket}.isReadOnly = true; }
+        { config.services.roundcube.database.host = mysqlSocket; }
+        (
+          let
+            dbConnect = config.age.secrets."dovecot.db.connect".path;
+          in
+          {
+            bindMounts."${dbConnect}".isReadOnly = true;
+            config =
+              let
+                sqlArgsFile = "dovecot-sql.conf.ext";
+              in
+              {
+                services.dovecot2.extraConfig = ''
+                  passdb {
+                    driver = sql
+                    args = ${sqlArgsFile}
+                  }
+                  userdb {
+                    driver = sql
+                    args = ${sqlArgsFile}
+                  }'';
+                environment.etc."dovecot/${sqlArgsFile}".text = ''
+                  !include ${dbConnect}
+                  driver = mysql
+                  default_pass_scheme = ARGON2ID
+                  user_query = \
+                    SELECT username \
+                    FROM dovecot_users WHERE username = '%n' AND domain = '%d'
+                  password_query = \
+                    SELECT username, domain, password \
+                    FROM dovecot_users WHERE username = '%n' AND domain = '%d'
+                  iterate_query = SELECT username AS user FROM dovecot_users
+                '';
+              };
+          }
+        )
+      ]
+    )
     {
       config =
         { pkgs, ... }@container:
@@ -214,7 +220,6 @@
           services.roundcube = rec {
             enable = true;
             database = {
-              host = "${config.containers.email.subnetPrefix}.1";
               dbname = "email";
               username = "email";
               passwordFile = config.age.secrets."email.db.password".path;
