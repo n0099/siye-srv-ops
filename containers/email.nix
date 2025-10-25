@@ -1,4 +1,9 @@
-{ config, lib, ... }:
+{
+  config,
+  lib,
+  inputs,
+  ...
+}:
 
 {
   containers.email = lib.mkMerge [
@@ -176,14 +181,30 @@
         { bindMounts.${mysqlSocket}.isReadOnly = true; }
         (
           let
-            passwordFile = config.age.secrets."roundcube.db.password".path;
+            hostPrivateKey = "/etc/ssh/ssh_host_ed25519_key";
+            secretName = "roundcube.db.password";
           in
           {
-            bindMounts."${passwordFile}".isReadOnly = true;
-            config.services.roundcube.database = {
-              host = "unix(${mysqlSocket})";
-              inherit passwordFile;
-            };
+            bindMounts."${hostPrivateKey}".isReadOnly = true;
+            config =
+              { ... }@container:
+
+              {
+                # https://wiki.nixos.org/wiki/Agenix#Access_secrets_inside_a_container
+                imports = [ inputs.agenix.nixosModules.default ];
+                age = {
+                  identityPaths = [ hostPrivateKey ];
+                  secrets.${secretName} = {
+                    file = ../secrets/roundcube.db.password.age;
+                    symlink = false;
+                    owner = "nginx";
+                  };
+                };
+                services.roundcube.database = {
+                  host = "unix(${mysqlSocket})";
+                  passwordFile = container.config.age.secrets.${secretName}.path;
+                };
+              };
           }
         )
         (
