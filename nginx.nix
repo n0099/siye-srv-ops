@@ -28,10 +28,14 @@ in
 {
   n0099.nginx.baseUrls = lib.flatten (
     lib.mapAttrsToList (
-      domain: baseUrlsKeyByPort:
+      domain: urlPathsKeyByPort:
       lib.concatMap (
-        baseUrlKeyByPort: lib.map (baseUrl: "${domain}${baseUrl}") (lib.attrNames baseUrlKeyByPort)
-      ) baseUrlsKeyByPort
+        urlPathKeyByPort:
+        let
+          concatBaseUrl = path: "${domain}${lib.optionalString (path != "/") path}";
+        in
+        (lib.map concatBaseUrl (lib.attrNames urlPathKeyByPort))
+      ) urlPathsKeyByPort
     ) proxyPassPortsByUrl
   );
   services.nginx = lib.mkMerge [
