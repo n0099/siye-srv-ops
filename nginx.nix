@@ -1,17 +1,17 @@
 { lib, pkgs, ... }:
 
 let
-  proxyPassPortsByUrl = {
-    "z.n0099.net" = [ { "/" = 9002; } ];
-    "simcity.moe" = [ { "/" = 9003; } ];
-    "mcbar.club" = [ { "/" = 9004; } ];
+  proxyPassByUrl = {
+    "z.n0099.net" = [ { "/" = "localhost:9002"; } ];
+    "simcity.moe" = [ { "/" = "localhost:9003"; } ];
+    "mcbar.club" = [ { "/" = "localhost:9004"; } ];
     "n0099.net" = [
-      { "/v" = 9005; }
-      { "/tc" = 9006; }
-      { "/pma" = 9007; }
-      { "/tbm/v1" = 9008; }
-      { "/tbm/be" = 9009; }
-      { "/tbm" = 3001; }
+      { "/v" = "localhost:9005"; }
+      { "/tc" = "localhost:9006"; }
+      { "/pma" = "localhost:9007"; }
+      { "/tbm/v1" = "localhost:9008"; }
+      { "/tbm/be" = "localhost:9009"; }
+      { "/tbm" = "localhost:3001"; }
     ];
   };
   certByDomain =
@@ -28,15 +28,15 @@ in
 {
   n0099.nginx.baseUrls = lib.flatten (
     lib.mapAttrsToList (
-      domain: urlPathsKeyByPort:
+      domain: urlPathsKeyByProxyPass:
       lib.concatMap (
-        urlPathKeyByPort:
+        urlPathKeyByProxyPass:
         let
           concatBaseUrl = path: "${domain}${lib.optionalString (path != "/") path}";
         in
-        (lib.map concatBaseUrl (lib.attrNames urlPathKeyByPort))
-      ) urlPathsKeyByPort
-    ) proxyPassPortsByUrl
+        (lib.map concatBaseUrl (lib.attrNames urlPathKeyByProxyPass))
+      ) urlPathsKeyByProxyPass
+    ) proxyPassByUrl
   );
   services.nginx = lib.mkMerge [
     {
@@ -46,13 +46,11 @@ in
           "simcity.moe"
           "n0099.net"
         ] (domain: certByDomain domain))
-        (lib.mapAttrs (_: baseUrlsKeyByPort: {
+        (lib.mapAttrs (_: baseUrlsKeyByProxyPass: {
           locations = lib.mkMerge (
-            lib.map (lib.mapAttrs (
-              _: port: { proxyPass = "http://localhost:${builtins.toString port}"; }
-            )) baseUrlsKeyByPort
+            lib.map (lib.mapAttrs (_: proxyPass: { proxyPass = "http://${proxyPass}"; })) baseUrlsKeyByProxyPass
           );
-        }) proxyPassPortsByUrl)
+        }) proxyPassByUrl)
         {
           "z.n0099.net" = (certByDomain "n0099.net") // {
             locations = {

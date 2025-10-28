@@ -8,12 +8,17 @@
 {
   containers.email = lib.mkMerge [
     {
-      subnetPrefix = "172.16.0.";
+      n0099 = {
+        subnetPrefix = "172.16.0.";
+        forwardPorts = lib.map (port: {
+          containerPort = port;
+          hostListenStreams = [ (builtins.toString port) ];
+        }) [ 25 ];
+      };
       bindMounts."/var/spool/mail" = {
         hostPath = "/srv/mail";
         isReadOnly = false;
       };
-      forwardPorts = lib.map (port: lib.genAttrs [ "containerPort" "hostPort" ] (_: port)) [ 25 ];
       config.services = {
         # https://brokkr.net/2018/06/04/setting-up-postfix-and-dovecot-slowly-and-properly/
         postfix.enable = true;
