@@ -277,7 +277,6 @@
         { pkgs, ... }:
 
         {
-          networking.firewall.allowedTCPPorts = [ 80 ];
           services = {
             roundcube = {
               enable = true;
@@ -288,11 +287,6 @@
                 $config['imap_host'] = 'tls://localhost:143';
                 $config['smtp_host'] = 'tls://localhost:587';
               '';
-            };
-            nginx.virtualHosts.${container.config.services.roundcube.hostName} = {
-              # https://github.com/NixOS/nixpkgs/blob/c8aa8cc00a5cb57fada0851a038d35c08a36a2bb/nixos/modules/services/mail/roundcube.nix#L180-L181
-              forceSSL = false;
-              enableACME = false;
             };
             phpfpm.pools.roundcube.phpPackage = lib.mkForce pkgs.php84; # https://github.com/NixOS/nixpkgs/blob/c8aa8cc00a5cb57fada0851a038d35c08a36a2bb/nixos/modules/services/mail/roundcube.nix#L264
           };
@@ -325,6 +319,68 @@
             );
           };
         };
+    }
+    {
+      config =
+        { ... }@container:
+
+        let
+          cfg = container.config.services;
+        in
+        lib.mkMerge [
+          {
+            networking.firewall.allowedTCPPorts = [ 80 ];
+            services = {
+              roundcube.configureNginx = false;
+              nginx = {
+                enable = true;
+                virtualHosts.${cfg.roundcube.hostName} = {
+                  # https://github.com/NixOS/nixpkgs/blob/78e34d1667d32d8a0ffc3eba4591ff256e80576e/nixos/modules/services/mail/roundcube.nix#L182-L211
+                  locations = {
+                    "/rc/" = {
+                      index = "index.php";
+                      priority = 1100;
+                      extraConfig = ''
+                        add_header Cache-Control 'public, max-age=604800, must-revalidate';
+                      '';
+                    };
+                    # https://github.com/NixOS/nixpkgs/pull/276496/files#r1438374310
+                    # https://wiki.archlinux.org/title/Roundcube#Webserver_(Nginx)
+                    "~ ^/rc/(SQL|bin|config|logs|temp|vendor)/" = {
+                      priority = 3110;
+                      return = 404;
+                    };
+                    "~ ^/rc/(CHANGELOG.md|INSTALL|LICENSE|README.md|SECURITY.md|UPGRADING|composer.json|composer.lock)" =
+                      {
+                        priority = 3120;
+                        return = 404;
+                      };
+                    "~* \\.php(/|$)" = {
+                      priority = 3130;
+                      extraConfig = ''
+                        fastcgi_pass unix:${cfg.phpfpm.pools.roundcube.socket};
+                        include ${cfg.nginx.package}/conf/fastcgi_params;
+                      '';
+                    };
+                  };
+                };
+              };
+            };
+          }
+          {
+            environment.etc."www/rc".source = cfg.roundcube.package;
+            services.nginx.virtualHosts.${cfg.roundcube.hostName} = {
+              root = "/etc/www";
+              locations = {
+                "/rc/".alias = "/etc/www/rc/";
+                "~* \\.php(/|$)".extraConfig = ''
+                  # https://serverfault.com/questions/465607/nginx-document-rootfastcgi-script-name-vs-request-filename/922596#922596
+                  fastcgi_param SCRIPT_FILENAME $request_filename;
+                '';
+              };
+            };
+          }
+        ];
     }
   ];
 }
