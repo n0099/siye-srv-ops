@@ -27,14 +27,18 @@
     }
     (
       let
-        certDir = "/etc/ssl/certs/n0099.net";
+        cert = rec {
+          dir = "/etc/ssl/certs/n0099.net";
+          cert = "${dir}/fullchain.pem";
+          privateKey = "${dir}/privkey.pem";
+        };
       in
       {
-        bindMounts.${certDir}.isReadOnly = true;
+        bindMounts.${cert.dir}.isReadOnly = true;
         config.services = {
           postfix = {
-            sslCert = "${certDir}/cert.pem";
-            sslKey = "${certDir}/privkey.pem";
+            sslCert = cert.cert;
+            sslKey = cert.privateKey;
             config = {
               # https://utcc.utoronto.ca/~cks/space/blog/spam/TLSExternalTypes-2025-05
               lmtp_tls_protocols = ">=TLSv1.3";
@@ -43,14 +47,23 @@
             };
           };
           dovecot2 = {
-            sslServerCert = "${certDir}/cert.pem";
-            sslServerKey = "${certDir}/privkey.pem";
+            sslServerCert = cert.cert;
+            sslServerKey = cert.privateKey;
             extraConfig = ''
               # https://doc.dovecot.org/2.3/configuration_manual/dovecot_ssl_configuration/
               ssl = required
               ssl_min_protocol = TLSv1.3
             '';
           };
+          roundcube.extraConfig =
+            let
+              commonName = "n0099.net";
+            in
+            ''
+              # https://www.roundcubeforum.net/index.php?topic=22035.0
+              $config['imap_conn_options']['ssl']['peer_name'] ='${commonName}';
+              $config['smtp_conn_options']['ssl']['peer_name'] ='${commonName}';
+            '';
         };
       }
     )
@@ -113,8 +126,10 @@
         ]
         ++ [
           {
-            config.smtpd_tls_received_header = true;
-            config.smtpd_relay_restrictions = "permit_mynetworks permit_sasl_authenticated defer_unauth_destination reject_unknown_recipient_domain reject_unverified_recipient";
+            config = {
+              smtpd_tls_received_header = true;
+              smtpd_relay_restrictions = "permit_mynetworks permit_sasl_authenticated defer_unauth_destination reject_unknown_recipient_domain reject_unverified_recipient";
+            };
           }
         ]
       );
@@ -205,9 +220,17 @@
                     owner = "nginx";
                   };
                 };
-                services.roundcube.database = {
-                  host = "unix(${mysqlSocket})";
-                  passwordFile = container.config.age.secrets.${secretName}.path;
+                services.roundcube = {
+                  database = {
+                    host = "unix(${mysqlSocket})";
+                    passwordFile = container.config.age.secrets.${secretName}.path;
+                    dbname = "email";
+                    username = "email";
+                  };
+                  extraConfig = ''
+                    $config['db_dsnw'] = preg_replace('#^pgsql://#', 'mysql://', $config['db_dsnw']);
+                    $config['db_prefix'] = 'roundcube_';
+                  '';
                 };
               };
           }
@@ -251,27 +274,19 @@
     )
     {
       config =
-        { pkgs, ... }@container:
+        { pkgs, ... }:
 
         {
           networking.firewall.allowedTCPPorts = [ 80 ];
           services = {
-            roundcube = rec {
+            roundcube = {
               enable = true;
-              database = {
-                dbname = "email";
-                username = "email";
-              };
               hostName = "n0099.net";
               extraConfig = ''
-                $config['db_dsnw'] = preg_replace('#^pgsql://#', 'mysql://', $config['db_dsnw']);
-                $config['db_prefix'] = 'roundcube_';
-                $config['imap_host'] = 'tls://localhost:143';
-                $config['imap_conn_options']['ssl']['peer_name'] ='${hostName}';
-                $config['smtp_host'] = 'tls://localhost:587';
-                $config['smtp_conn_options']['ssl']['peer_name'] ='${hostName}';
                 $config['support_url'] = 'https://z.n0099.net';
                 $config['product_name'] = '四叶伊美尔';
+                $config['imap_host'] = 'tls://localhost:143';
+                $config['smtp_host'] = 'tls://localhost:587';
               '';
             };
             nginx.virtualHosts.${container.config.services.roundcube.hostName} = {
