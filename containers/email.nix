@@ -116,7 +116,6 @@ in
         ]
         ++ [
           {
-            lookupMX = true;
             relayHost = "smtp.azurecomm.net";
             relayPort = 587;
             config = {
@@ -128,8 +127,6 @@ in
             config = {
               tls_append_default_CA = true;
               smtp_tls_session_cache_database = "btree:\${data_directory}/smtp_scache";
-              smtp_tls_security_level = "dane";
-              smtp_dns_support_level = "dnssec";
             };
           }
         ]
@@ -333,6 +330,9 @@ in
                 $config['product_name'] = '四叶伊美尔';
                 $config['imap_host'] = 'tls://localhost:143';
                 $config['smtp_host'] = 'tls://localhost:587';
+                # https://github.com/roundcube/roundcubemail/blob/2ae7cec1ca7086a93500f05b3810f2cc9a16990f/config/defaults.inc.php#L273-L281
+                $config['smtp_user'] = "";
+                $config['smtp_pass'] = "";
               '';
             };
             phpfpm.pools.roundcube.phpPackage = lib.mkForce pkgs.php84; # https://github.com/NixOS/nixpkgs/blob/c8aa8cc00a5cb57fada0851a038d35c08a36a2bb/nixos/modules/services/mail/roundcube.nix#L264
