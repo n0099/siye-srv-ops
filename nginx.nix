@@ -1,4 +1,9 @@
-{ lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 let
   proxyPassByUrl = {
@@ -12,6 +17,7 @@ let
       { "/tbm/v1" = "localhost:9008"; }
       { "/tbm/be" = "localhost:9009"; }
       { "/tbm" = "localhost:3001"; }
+      { "/rc" = config.containers.email.localAddress; }
     ];
   };
   certByDomain =
