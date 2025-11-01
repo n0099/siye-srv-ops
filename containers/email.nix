@@ -5,7 +5,15 @@
   ...
 }:
 
+let
+  smtpPorts = [
+    25
+    465
+    587
+  ];
+in
 {
+  networking.firewall.allowedTCPPorts = smtpPorts;
   containers.email = lib.mkMerge [
     {
       n0099 = {
@@ -13,7 +21,8 @@
         forwardPorts = lib.map (port: {
           containerPort = port;
           hostListenStreams = [ (builtins.toString port) ];
-        }) [ 25 ];
+        }) smtpPorts;
+        outboundInterface = "ens3";
       };
       bindMounts."/var/spool/mail" = {
         hostPath = "/srv/mail";
@@ -130,6 +139,20 @@
               smtpd_tls_received_header = true;
               smtpd_relay_restrictions = "permit_mynetworks permit_sasl_authenticated defer_unauth_destination reject_unknown_recipient_domain reject_unverified_recipient";
             };
+            masterConfig =
+              lib.genAttrs
+                [
+                  # https://datatracker.ietf.org/doc/html/rfc8314#section-7.3
+                  "smtps"
+                  "submission"
+                ]
+                (_: {
+                  # https://serverfault.com/questions/1018401/postfix-port-587-activated-by-uncommenting-a-line-in-master-cf-i-see-no-refere/1018407#1018407
+                  type = "inet";
+                  private = false;
+                  chroot = true;
+                  command = "smtpd";
+                });
           }
         ]
       );
