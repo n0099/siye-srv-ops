@@ -204,17 +204,27 @@ in
       };
     }
     {
-      config.services.dovecot2 = {
-        # https://doc.dovecot.org/2.3/settings/core/
-        mailPlugins.perProtocol.lmtp.enable = [ "sieve" ];
-        extraConfig = ''
-          service managesieve-login {
-            inet_listener sieve {
-              port = 4190
-            }
-          }
-        '';
-      };
+      config =
+        { pkgs, ... }:
+
+        {
+          environment.systemPackages = [ pkgs.dovecot_pigeonhole ];
+          services.dovecot2 = {
+            # https://doc.dovecot.org/2.3/configuration_manual/sieve/configuration/#basic-configuration
+            mailPlugins.perProtocol.lmtp.enable = [ "sieve" ];
+            sieve.extensions = [
+              "regex"
+              "fileinto"
+            ];
+            extraConfig = ''
+              service managesieve-login {
+                inet_listener sieve {
+                  port = 4190
+                }
+              }
+            '';
+          };
+        };
     }
     (
       let
