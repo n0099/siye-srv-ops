@@ -190,8 +190,11 @@ in
     )
     {
       config.services.dovecot2 = {
-        mailLocation = "mdbox:/var/mail/%u/mdbox";
+        # https://doc.dovecot.org/2.3/configuration_manual/home_directories_for_virtual_users/
+        # https://doc.dovecot.org/2.3/settings/pigeonhole/#pigeonhole_setting-sieve
+        mailLocation = "mdbox:~/mdbox";
         extraConfig = ''
+          mail_home = /var/mail/%u
           auth_mechanisms = plain # https://doc.dovecot.org/2.3/configuration_manual/authentication/#authentication-in-proxies-and-directors
         '';
       };
@@ -300,8 +303,11 @@ in
                   !include ${dbConnect}
                   driver = mysql
                   default_pass_scheme = ARGON2ID
+                  # https://doc.dovecot.org/2.3/admin_manual/system_users_used_by_dovecot/#uids
+                  # https://systemd.io/UIDS-GIDS/
+                  # https://man.archlinux.org/man/login.defs.5
                   user_query = \
-                    SELECT username \
+                    SELECT username, uid, gid \
                     FROM dovecot_users WHERE username = '%n' AND domain = '%d'
                   password_query = \
                     SELECT username, domain, password \
