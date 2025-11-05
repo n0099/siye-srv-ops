@@ -418,19 +418,25 @@ in
               };
             };
           }
-          {
-            environment.etc."www/rc".source = cfg.roundcube.package;
-            services.nginx.virtualHosts.${cfg.roundcube.hostName} = {
-              root = "/etc/www";
-              locations = {
-                "/rc/".alias = "/etc/www/rc/";
-                "~* \\.php(/|$)".extraConfig = ''
-                  # https://serverfault.com/questions/465607/nginx-document-rootfastcgi-script-name-vs-request-filename/922596#922596
-                  fastcgi_param SCRIPT_FILENAME $request_filename;
-                '';
+          (
+            let
+              root = "/srv/www";
+              alias = "${root}/rc";
+            in
+            {
+              systemd.tmpfiles.settings."www-root".${alias}."L+".argument = cfg.roundcube.package.outPath;
+              services.nginx.virtualHosts.${cfg.roundcube.hostName} = {
+                inherit root;
+                locations = {
+                  "/rc/".alias = "${alias}/";
+                  "~* \\.php(/|$)".extraConfig = ''
+                    # https://serverfault.com/questions/465607/nginx-document-rootfastcgi-script-name-vs-request-filename/922596#922596
+                    fastcgi_param SCRIPT_FILENAME $request_filename;
+                  '';
+                };
               };
-            };
-          }
+            }
+          )
         ];
     }
   ];
