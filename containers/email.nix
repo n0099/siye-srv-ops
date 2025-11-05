@@ -107,9 +107,12 @@ in
               ];
             in
             {
-              virtual =
-                "z@n0099.net z@n0099.net"
-                + lib.concatMapStringsSep "\n" (domain: "@${domain} n@n0099.net") virtualDomains;
+              virtual = lib.concatStringsSep "\n" (
+                [
+                  "z@n0099.net z@n0099.net"
+                ]
+                ++ lib.map (domain: "@${domain} n@n0099.net") virtualDomains
+              );
               config.virtual_mailbox_domains = virtualDomains;
             }
           )
@@ -121,6 +124,7 @@ in
             config = {
               smtp_sasl_auth_enable = true;
               smtp_sender_dependent_authentication = true;
+              smtp_sasl_tls_security_options = "noanonymous"; # https://www.postfix.org/SASL_README.html#client_sasl_policy
             };
           }
           {

@@ -126,17 +126,24 @@ in
     }
     {
       additionalModules = [ pkgs.nginxModules.moreheaders ];
-      virtualHosts."n0099.net".locations = {
-        "/live2d/" = {
-          index = "index.js";
-          extraConfig = ''
-            more_set_headers "Access-Control-Allow-Origin: https://z.n0099.net";
+      virtualHosts."n0099.net".locations = lib.mkMerge [
+        {
+          "/live2d/" = {
+            index = "index.js";
+            extraConfig = ''
+              more_set_headers "Access-Control-Allow-Origin: https://z.n0099.net";
+            '';
+          };
+          "~ ^/live2d/.+/".extraConfig = ''
+            more_set_headers "Cache-Control: public, max-age=31536000, immutable";
           '';
-        };
-        "~ ^/live2d/.+/".extraConfig = ''
-          more_set_headers "Cache-Control: public, max-age=31536000, immutable";
-        '';
-      };
+        }
+        {
+          "/rc".extraConfig = ''
+            more_set_headers "X-Frame-Options: SAMEORIGIN"; # https://github.com/roundcube/roundcubemail/issues/6882
+          '';
+        }
+      ];
     }
   ];
 }
