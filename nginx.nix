@@ -23,7 +23,8 @@ let
   certByDomain =
     domain:
     let
-      certBasePath = "/etc/ssl/certs/${domain}";
+      secondLevelDomain = lib.concatStringsSep "." (lib.takeEnd 2 (lib.splitString "." domain));
+      certBasePath = "/etc/ssl/certs/${secondLevelDomain}";
     in
     {
       forceSSL = true;
@@ -47,18 +48,14 @@ in
   services.nginx = lib.mkMerge [
     {
       virtualHosts = lib.mkMerge [
-        (lib.genAttrs [
-          "mcbar.club"
-          "simcity.moe"
-          "n0099.net"
-        ] (domain: certByDomain domain))
+        (lib.genAttrs (lib.unique (lib.map lib.head (lib.map (lib.splitString "/") config.n0099.nginx.baseUrls))) certByDomain)
         (lib.mapAttrs (_: baseUrlsKeyByProxyPass: {
           locations = lib.mkMerge (
             lib.map (lib.mapAttrs (_: proxyPass: { proxyPass = "http://${proxyPass}"; })) baseUrlsKeyByProxyPass
           );
         }) proxyPassByUrl)
         {
-          "z.n0099.net" = (certByDomain "n0099.net") // {
+          "z.n0099.net" = {
             locations = {
               "/".extraConfig = ''
                 # https://zulip.readthedocs.io/en/9.4/production/reverse-proxies.html#nginx-configuration
