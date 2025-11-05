@@ -6,7 +6,8 @@
 }:
 
 let
-  originDomains = [ "simcity.moe" ];
+  originDomains' = [ "simcity.moe" ];
+  originDomains = (addWWWDomains originDomains') ++ originDomains';
   proxyPassByUrl = {
     "z.n0099.net" = [ { "/" = "127.0.0.1:9002"; } ];
     "simcity.moe" = [ { "/" = "127.0.0.1:9003"; } ];
@@ -21,17 +22,21 @@ let
       { "/rc" = config.containers.email.localAddress; }
     ];
   };
+  secondLevelDomain = domain: lib.concatStringsSep "." (lib.takeEnd 2 (lib.splitString "." domain));
   certByDomain =
     domain:
     let
-      secondLevelDomain = lib.concatStringsSep "." (lib.takeEnd 2 (lib.splitString "." domain));
-      certBasePath = "/etc/ssl/certs/${secondLevelDomain}";
+      certBasePath = "/etc/ssl/certs/${secondLevelDomain domain}";
     in
     {
       forceSSL = true;
       sslCertificate = "${certBasePath}/fullchain.pem"; # https://stackoverflow.com/questions/26191463/ssl-error0b080074x509-certificate-routinesx509-check-private-keykey-values/41154564#41154564
       sslCertificateKey = "${certBasePath}/privkey.pem";
     };
+  baseDomains = lib.unique (
+    lib.map lib.head (lib.map (lib.splitString "/") config.n0099.nginx.baseUrls)
+  );
+  addWWWDomains = lib.map (domain: "www.${domain}");
 in
 {
   n0099.nginx.baseUrls = lib.flatten (
@@ -49,7 +54,18 @@ in
   services.nginx = lib.mkMerge [
     {
       virtualHosts = lib.mkMerge [
-        (lib.genAttrs (lib.unique (lib.map lib.head (lib.map (lib.splitString "/") config.n0099.nginx.baseUrls))) certByDomain)
+        (lib.genAttrs baseDomains certByDomain)
+        (lib.genAttrs
+          # https://news.ycombinator.com/item?id=2455864
+          (addWWWDomains (lib.unique (lib.map secondLevelDomain baseDomains)))
+          (
+            domain:
+            certByDomain domain
+            // {
+              locations."/".return = "301 https://${secondLevelDomain domain}";
+            }
+          )
+        )
         (lib.mapAttrs (_: baseUrlsKeyByProxyPass: {
           locations = lib.mkMerge (
             lib.map (lib.mapAttrs (_: proxyPass: { proxyPass = "http://${proxyPass}"; })) baseUrlsKeyByProxyPass
