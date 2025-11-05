@@ -1,4 +1,4 @@
 #!/bin/sh -eux
 # https://stackoverflow.com/questions/67872347/whats-the-purpose-of-the-argument-at-the-end-of-bash-c-command-argument
 time find srv -type f -name compose.yaml -exec sh -euxc \
-    'cd "$(dirname {})" && /usr/bin/time -v docker compose "$@"' "$0" "$@" \;
+    'cd "$(dirname {})" && /usr/bin/env time -v docker compose "$@"' "$0" "$@" \;
