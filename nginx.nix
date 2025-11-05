@@ -7,16 +7,16 @@
 
 let
   proxyPassByUrl = {
-    "z.n0099.net" = [ { "/" = "localhost:9002"; } ];
-    "simcity.moe" = [ { "/" = "localhost:9003"; } ];
-    "mcbar.club" = [ { "/" = "localhost:9004"; } ];
+    "z.n0099.net" = [ { "/" = "127.0.0.1:9002"; } ];
+    "simcity.moe" = [ { "/" = "127.0.0.1:9003"; } ];
+    "mcbar.club" = [ { "/" = "127.0.0.1:9004"; } ];
     "n0099.net" = [
-      { "/v" = "localhost:9005"; }
-      { "/tc" = "localhost:9006"; }
-      { "/pma" = "localhost:9007"; }
-      { "/tbm/v1" = "localhost:9008"; }
-      { "/tbm/be" = "localhost:9009"; }
-      { "/tbm" = "localhost:3001"; }
+      { "/v" = "127.0.0.1:9005"; }
+      { "/tc" = "127.0.0.1:9006"; }
+      { "/pma" = "127.0.0.1:9007"; }
+      { "/tbm/v1" = "127.0.0.1:9008"; }
+      { "/tbm/be" = "127.0.0.1:9009"; }
+      { "/tbm" = "127.0.0.1:3001"; }
       { "/rc" = config.containers.email.localAddress; }
     ];
   };
