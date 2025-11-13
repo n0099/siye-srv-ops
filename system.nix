@@ -2,8 +2,8 @@
 
 lib.mkMerge [
   {
-    boot.kernelPackages = pkgs.linuxPackagesFor (
-      pkgs.linuxKernel.kernels.linux_latest.override {
+    boot.kernelPackages =
+      {
         argsOverride = rec {
           # wait for zfs 2.4 to support kernel up to 6.17
           # https://wiki.nixos.org/wiki/Linux_kernel#Pinning_a_kernel_version
@@ -16,7 +16,8 @@ lib.mkMerge [
           };
         };
       }
-    );
+      |> pkgs.linuxKernel.kernels.linux_latest.override
+      |> pkgs.linuxPackagesFor;
   }
   {
     networking.hostId = "c7635afd";

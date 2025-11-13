@@ -26,7 +26,8 @@ let
       { "/rc" = config.containers.email.localAddress; }
     ];
   };
-  secondLevelDomain = domain: lib.concatStringsSep "." (lib.takeEnd 2 (lib.splitString "." domain));
+  secondLevelDomain =
+    domain: domain |> lib.splitString "." |> lib.takeEnd 2 |> lib.concatStringsSep ".";
   certByDomain =
     domain:
     let
@@ -37,31 +38,32 @@ let
       sslCertificate = "${certBasePath}/fullchain.pem"; # https://stackoverflow.com/questions/26191463/ssl-error0b080074x509-certificate-routinesx509-check-private-keykey-values/41154564#41154564
       sslCertificateKey = "${certBasePath}/privkey.pem";
     };
-  baseDomains = lib.unique (
-    lib.map lib.head (lib.map (lib.splitString "/") config.n0099.nginx.baseUrls)
-  );
+  baseDomains =
+    config.n0099.nginx.baseUrls |> lib.map (lib.splitString "/") |> lib.map lib.head |> lib.unique;
   addWWWDomains = lib.map (domain: "www.${domain}");
 in
 {
-  n0099.nginx.baseUrls = lib.flatten (
-    lib.mapAttrsToList (
+  n0099.nginx.baseUrls =
+    proxyPassByUrl
+    |> lib.mapAttrsToList (
       domain: urlPathsKeyByProxyPass:
-      lib.concatMap (
+      urlPathsKeyByProxyPass
+      |> lib.concatMap (
         urlPathKeyByProxyPass:
         let
           concatBaseUrl = path: "${domain}${lib.optionalString (path != "/") path}";
         in
-        (lib.map concatBaseUrl (lib.attrNames urlPathKeyByProxyPass))
-      ) urlPathsKeyByProxyPass
-    ) proxyPassByUrl
-  );
+        urlPathKeyByProxyPass |> lib.attrNames |> lib.map concatBaseUrl
+      )
+    )
+    |> lib.flatten;
   services.nginx = lib.mkMerge [
     {
       virtualHosts = lib.mkMerge [
         (lib.genAttrs baseDomains certByDomain)
         (lib.genAttrs
           # https://news.ycombinator.com/item?id=2455864
-          (addWWWDomains (lib.unique (lib.map secondLevelDomain baseDomains)))
+          (baseDomains |> lib.map secondLevelDomain |> lib.unique |> addWWWDomains)
           (
             domain:
             certByDomain domain
@@ -71,9 +73,10 @@ in
           )
         )
         (lib.mapAttrs (_: baseUrlsKeyByProxyPass: {
-          locations = lib.mkMerge (
-            lib.map (lib.mapAttrs (_: proxyPass: { proxyPass = "http://${proxyPass}"; })) baseUrlsKeyByProxyPass
-          );
+          locations =
+            baseUrlsKeyByProxyPass
+            |> lib.map (lib.mapAttrs (_: proxyPass: { proxyPass = "http://${proxyPass}"; }))
+            |> lib.mkMerge;
         }) proxyPassByUrl)
         (lib.genAttrs originDomains (_: {
           extraConfig = ''

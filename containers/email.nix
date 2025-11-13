@@ -19,10 +19,12 @@ lib.mkMerge [
       {
         n0099 = {
           subnetPrefix = "172.16.0.";
-          forwardPorts = lib.map (port: {
-            containerPort = port;
-            hostListenStreams = [ (builtins.toString port) ];
-          }) smtpPorts;
+          forwardPorts =
+            smtpPorts
+            |> lib.map (port: {
+              containerPort = port;
+              hostListenStreams = [ (port |> toString) ];
+            });
           outboundInterface = "ens3";
         };
         bindMounts."/var/spool/mail" = {
@@ -108,12 +110,14 @@ lib.mkMerge [
                 ];
               in
               {
-                virtual = lib.concatStringsSep "\n" (
-                  [
-                    "z@n0099.net z@n0099.net"
-                  ]
-                  ++ lib.map (domain: "@${domain} n@n0099.net") virtualDomains
-                );
+                virtual =
+                  (
+                    [
+                      "z@n0099.net z@n0099.net"
+                    ]
+                    ++ (virtualDomains |> lib.map (domain: "@${domain} n@n0099.net"))
+                  )
+                  |> lib.concatStringsSep "\n";
                 config.virtual_mailbox_domains = virtualDomains;
               }
             )
