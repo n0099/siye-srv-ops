@@ -6,8 +6,12 @@
 }:
 
 let
-  originDomains' = [ "simcity.moe" ];
-  originDomains = (addWWWDomains originDomains') ++ originDomains';
+  originSecondLevelDomains = [
+    "n0099.net"
+    "simcity.moe"
+  ];
+  originDomains =
+    (addWWWDomains originSecondLevelDomains) ++ originSecondLevelDomains ++ [ "z.n0099.net" ];
   proxyPassByUrl = {
     "z.n0099.net" = [ { "/" = "127.0.0.1:9002"; } ];
     "simcity.moe" = [ { "/" = "127.0.0.1:9003"; } ];

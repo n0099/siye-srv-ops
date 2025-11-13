@@ -7,6 +7,9 @@
       package = pkgs.mysql80;
       settings.mysqld = lib.mkMerge [
         {
+          skip_name_resolve = false; # https://serverfault.com/questions/393862/mysql-warning-ip-address-could-not-be-resolved/393874#393874
+        }
+        {
           performance_schema = false;
           slow_query_log = true;
           # log-error = "/var/log/mysql/error.log";
