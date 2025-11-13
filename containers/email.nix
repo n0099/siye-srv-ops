@@ -202,10 +202,9 @@ lib.mkMerge [
         };
       }
       {
-        bindMounts."/var/lib/dhparams/dovecot2.pem".isReadOnly = false;
         config = {
           services.dovecot2.enableDHE = true;
-          systemd.services.dhparams-gen-dovecot2.requiredBy = [ "dovecot2.service" ]; # https://github.com/NixOS/nixpkgs/pull/453845
+          security.dhparams = config.security.dhparams;
         };
       }
       {
