@@ -299,34 +299,32 @@ lib.mkMerge [
                 roundcube.configureNginx = false;
                 nginx = {
                   enable = true;
-                  virtualHosts.${cfg.roundcube.hostName} = {
+                  virtualHosts.${cfg.roundcube.hostName}.locations = {
                     # https://github.com/NixOS/nixpkgs/blob/78e34d1667d32d8a0ffc3eba4591ff256e80576e/nixos/modules/services/mail/roundcube.nix#L182-L211
-                    locations = {
-                      "/rc/" = {
-                        index = "index.php";
-                        priority = 1100;
-                        extraConfig = ''
-                          add_header Cache-Control 'public, max-age=604800, must-revalidate';
-                        '';
-                      };
-                      # https://github.com/NixOS/nixpkgs/pull/276496/files#r1438374310
-                      # https://wiki.archlinux.org/title/Roundcube#Webserver_(Nginx)
-                      "~ ^/rc/(SQL|bin|config|logs|temp|vendor)/" = {
-                        priority = 3110;
+                    "/rc/" = {
+                      index = "index.php";
+                      priority = 1100;
+                      extraConfig = ''
+                        add_header Cache-Control 'public, max-age=604800, must-revalidate';
+                      '';
+                    };
+                    # https://github.com/NixOS/nixpkgs/pull/276496/files#r1438374310
+                    # https://wiki.archlinux.org/title/Roundcube#Webserver_(Nginx)
+                    "~ ^/rc/(SQL|bin|config|logs|temp|vendor)/" = {
+                      priority = 3110;
+                      return = 404;
+                    };
+                    "~ ^/rc/(CHANGELOG.md|INSTALL|LICENSE|README.md|SECURITY.md|UPGRADING|composer.json|composer.lock)" =
+                      {
+                        priority = 3120;
                         return = 404;
                       };
-                      "~ ^/rc/(CHANGELOG.md|INSTALL|LICENSE|README.md|SECURITY.md|UPGRADING|composer.json|composer.lock)" =
-                        {
-                          priority = 3120;
-                          return = 404;
-                        };
-                      "~* \\.php(/|$)" = {
-                        priority = 3130;
-                        extraConfig = ''
-                          fastcgi_pass unix:${cfg.phpfpm.pools.roundcube.socket};
-                          include ${cfg.nginx.package}/conf/fastcgi_params;
-                        '';
-                      };
+                    "~* \\.php(/|$)" = {
+                      priority = 3130;
+                      extraConfig = ''
+                        fastcgi_pass unix:${cfg.phpfpm.pools.roundcube.socket};
+                        include ${cfg.nginx.package}/conf/fastcgi_params;
+                      '';
                     };
                   };
                 };

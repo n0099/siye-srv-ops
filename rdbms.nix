@@ -66,9 +66,6 @@
       {
         settings = lib.mkMerge [
           {
-            listen_addresses = lib.mkForce "localhost, 172.17.0.1"; # host.docker.internal
-          }
-          {
             # https://www.postgresql.org/docs/current/auto-explain.html
             shared_preload_libraries = [ "auto_explain" ];
             "auto_explain.log_min_duration" = 1000;
@@ -134,6 +131,9 @@
             effective_io_concurrency = 500;
           }
         ];
+      }
+      {
+        settings.listen_addresses = lib.mkForce "localhost, 172.17.0.1"; # host.docker.internal
         authentication = ''
           host all all 172.16.0.0/12 scram-sha-256
         '';
