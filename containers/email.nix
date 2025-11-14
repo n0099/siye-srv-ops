@@ -21,7 +21,7 @@ lib.mkMerge [
           subnetPrefix = "172.16.0.";
           forwardPorts =
             smtpPorts
-            |> lib.map (port: {
+            |> map (port: {
               containerPort = port;
               hostListenStreams = [ (port |> toString) ];
             });
@@ -115,7 +115,7 @@ lib.mkMerge [
                     [
                       "z@n0099.net z@n0099.net"
                     ]
-                    ++ (virtualDomains |> lib.map (domain: "@${domain} n@n0099.net"))
+                    ++ (virtualDomains |> map (domain: "@${domain} n@n0099.net"))
                   )
                   |> lib.concatStringsSep "\n";
                 config.virtual_mailbox_domains = virtualDomains;

@@ -39,8 +39,8 @@ let
       sslCertificateKey = "${certBasePath}/privkey.pem";
     };
   baseDomains =
-    config.n0099.nginx.baseUrls |> lib.map (lib.splitString "/") |> lib.map lib.head |> lib.unique;
-  addWWWDomains = lib.map (domain: "www.${domain}");
+    config.n0099.nginx.baseUrls |> map (lib.splitString "/") |> map lib.head |> lib.unique;
+  addWWWDomains = map (domain: "www.${domain}");
 in
 {
   n0099.nginx.baseUrls =
@@ -53,7 +53,7 @@ in
         let
           concatBaseUrl = path: "${domain}${lib.optionalString (path != "/") path}";
         in
-        urlPathKeyByProxyPass |> lib.attrNames |> lib.map concatBaseUrl
+        urlPathKeyByProxyPass |> lib.attrNames |> map concatBaseUrl
       )
     )
     |> lib.flatten;
@@ -63,7 +63,7 @@ in
         (lib.genAttrs baseDomains certByDomain)
         (lib.genAttrs
           # https://news.ycombinator.com/item?id=2455864
-          (baseDomains |> lib.map secondLevelDomain |> lib.unique |> addWWWDomains)
+          (baseDomains |> map secondLevelDomain |> lib.unique |> addWWWDomains)
           (
             domain:
             certByDomain domain
@@ -75,7 +75,7 @@ in
         (lib.mapAttrs (_: baseUrlsKeyByProxyPass: {
           locations =
             baseUrlsKeyByProxyPass
-            |> lib.map (lib.mapAttrs (_: proxyPass: { proxyPass = "http://${proxyPass}"; }))
+            |> map (lib.mapAttrs (_: proxyPass: { proxyPass = "http://${proxyPass}"; }))
             |> lib.mkMerge;
         }) proxyPassByUrl)
         (lib.genAttrs originDomains (_: {
@@ -114,7 +114,7 @@ in
             {
               root = "/srv/www/n0099";
               locations =
-                (lib.genAttrs (lib.map (url: "/${url}") [
+                (lib.genAttrs (map (url: "/${url}") [
                   "error"
                   "favicon.ico"
                   "robots.txt"
