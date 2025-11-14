@@ -1,5 +1,5 @@
 { lib, ... }:
 
 {
-  programs.htop.settings.show_cpu_frequency = lib.mkForce false;
+  programs.htop.settings.show_cpu_frequency = false |> lib.mkForce;
 }

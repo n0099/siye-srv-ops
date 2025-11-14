@@ -133,10 +133,8 @@
         ];
       }
       {
-        settings.listen_addresses = lib.mkForce "localhost, 172.17.0.1"; # host.docker.internal
-        authentication = ''
-          host all all 172.16.0.0/12 scram-sha-256
-        '';
+        settings.listen_addresses = "localhost, 172.17.0.1" |> lib.mkForce; # host.docker.internal
+        authentication = "host all all 172.16.0.0/12 scram-sha-256";
       }
     ];
   };

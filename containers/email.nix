@@ -253,7 +253,7 @@ lib.mkMerge [
                   $config['smtp_pass'] = "";
                 '';
               };
-              phpfpm.pools.roundcube.phpPackage = lib.mkForce pkgs.php84; # https://github.com/NixOS/nixpkgs/blob/c8aa8cc00a5cb57fada0851a038d35c08a36a2bb/nixos/modules/services/mail/roundcube.nix#L264
+              phpfpm.pools.roundcube.phpPackage = pkgs.php84 |> lib.mkForce; # https://github.com/NixOS/nixpkgs/blob/c8aa8cc00a5cb57fada0851a038d35c08a36a2bb/nixos/modules/services/mail/roundcube.nix#L264
             };
             systemd.services = {
               # https://github.com/NixOS/nixpkgs/blob/c8aa8cc00a5cb57fada0851a038d35c08a36a2bb/nixos/modules/services/mail/roundcube.nix#L274
