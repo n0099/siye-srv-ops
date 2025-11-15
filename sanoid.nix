@@ -1,10 +1,32 @@
 {
+  config,
   pkgs,
   lib,
   ...
 }:
 
 let
+  logsDir = "/var/log/sanoid-upload";
+  binary = lib.genAttrs [ "pv" "jq" "time" "rclone" ] (pkg: "${pkgs."${pkg}"}/bin/${pkg}") // {
+    zfs = "/run/booted-system/sw/bin/zfs"; # https://github.com/NixOS/nixpkgs/blob/3acb677ea67d4c6218f33de0db0955f116b7588c/nixos/modules/services/backup/sanoid.nix#L109
+  };
+  rcloneEnv = pkgs.writeText "sanoid-upload-rclone.env" ''
+    # https://forum.rclone.org/t/multiple-config-rclone-conf-files/38219
+    # https://forum.rclone.org/t/using-backend-flags-in-remotes-configuration-in-config-file/26889
+    # https://rclone.org/docs/#precedence
+    RCLONE_CONFIG_S3_TYPE=s3
+    RCLONE_CONFIG_S3_PROVIDER=AWS
+    RCLONE_CONFIG_S3_STORAGE_CLASS=GLACIER
+
+    # https://forum.rclone.org/t/s3-copy-illegal-location-constraint-exception-error-when-trying-to-copy-to-a-new-path/48888
+    RCLONE_CONFIG_S3_NO_CHECK_BUCKET=true
+
+    # https://rclone.org/s3/#s3-chunk-size
+    # https://docs.aws.amazon.com/AmazonS3/latest/userguide/qfacts.html
+    # https://www.wolframalpha.com/input?i=10000%20*%20x%20MiB%20%3D%201TiB
+    RCLONE_CONFIG_S3_CHUNK_SIZE=100Mi
+    RCLONE_CONFIG_S3_UPLOAD_CONCURRENCY=8
+  '';
   script = pkgs.writeShellScript "sanoid-upload-script" ''
     # based on https://github.com/n0099/azcopy_sanoid_zfs_snapshot.sh
 
@@ -12,49 +34,46 @@ let
     # https://gist.github.com/mohanpedala/1e2ff5661761d3abd0385e8223e16425
     set -euxo pipefail
 
+    # https://github.com/jimsalterjrs/sanoid/blob/dbcaeef1ac55bd3dd929b86a8f6082fef16f02b1/README.md#pre_snapshot_script
     [[ $SANOID_SCRIPT == post ]] || exit
     [[ $SANOID_PRE_FAILURE -eq 0 ]] || exit
     [[ $SANOID_TARGETS ]] || exit
     [[ $SANOID_SNAPNAMES ]] || exit
 
-    # https://mywiki.wooledge.org/BashFAQ/028
-    # https://stackoverflow.com/questions/35006457/choosing-between-0-and-bash-source
-    if [[ ''${BASH_SOURCE[0]} = */* ]]; then
-        bundledir=''${BASH_SOURCE%/*}
-    else
-        bundledir=.
-    fi
     # https://unix.stackexchange.com/questions/79064/how-to-export-variables-from-a-file/79077#79077
     set -o allexport
-    source "$bundledir/.env"
+    source "${rcloneEnv}"
+    source "${config.age.secrets."sanoid.upload.env".path}"
     set +o allexport
-    month_directory=$CONTAINER/$(date -u +%Y-%m)/
 
-    zfs_send_to_azcopy() {
-        local file_system=$1
-        local snapshot=$2
-        local latest_snapshot=''${3-}
+    # https://stackoverflow.com/questions/5564418/exporting-an-array-in-bash-script/21941473#21941473
+    # https://stackoverflow.com/questions/1469849/how-to-split-one-string-into-multiple-strings-separated-by-at-least-one-space-in/30212526#30212526
+    read -ra buckets <<< "$BUCKETS"
+
+    month_dir=$(date -u +%Y-%m)
+
+    zfs_send_to_rclone() {
+        local bucket=$1
+        local file_system=$2
+        local snapshot=$3
+        local latest_snapshot=''${4-}
         local send_params=()
         [[ -n $latest_snapshot ]] \
             && send_params+=('-i' "$file_system@$latest_snapshot" "$file_system@$snapshot") \
             || send_params+=("$file_system@$snapshot")
 
-        local AZCOPY_LOG_LOCATION=$bundledir/logs/azcopy
-        export AZCOPY_LOG_LOCATION # https://learn.microsoft.com/en-us/azure/storage/common/storage-use-azcopy-configure#change-the-location-of-log-files
-        export AZCOPY_BUFFER_GB=0.5 # https://learn.microsoft.com/en-us/azure/storage/common/storage-use-azcopy-optimize#optimize-memory-use
-
         # https://mywiki.wooledge.org/BashPitfalls#local_var.3D.24.28cmd.29
         local send_size
-        send_size=$(zfs send -LcPn "''${send_params[@]}" | awk '/^size/{print $2}')
+        send_size=$(${binary.zfs} send -LcPn "''${send_params[@]}" | awk '/^size/{print $2}')
         [[ $send_size -gt 0 ]] || return 0
 
         # https://mywiki.wooledge.org/BashFAQ/050
-        /usr/bin/time -v zfs send -LcP "''${send_params[@]}" \
-            | pv -pterabfs "$send_size" \
-            | /usr/bin/time -v azcopy cp --from-to PipeBlob --block-size-mb 256 --overwrite false --block-blob-tier cold \
-                "$month_directory''${file_system#rpool/}/''${snapshot#autosnap_}$SAS"
-        # https://github.com/Azure/azure-storage-azcopy/issues/1642
-        # https://learn.microsoft.com/en-us/azure/storage/blobs/access-tiers-overview
+        ${binary.time} -v ${binary.zfs} send -LcP "''${send_params[@]}" \
+            | ${binary.pv} -pterabfs "$send_size" \
+            | ${binary.time} -v ${binary.rclone} rcat \
+                --error-on-no-transfer --ignore-existing \
+                "$bucket/$month_dir/''${file_system#rpool/}/''${snapshot#autosnap_}"
+        # https://forum.rclone.org/t/copyto-fail-on-error-and-dont-overwrite-files/47736
     }
 
     process_snapshots() {
@@ -62,28 +81,22 @@ let
         # shellcheck disable=SC2317
         process_snapshot() {
             local snapshot=$2
-            case $snapshot in
-                autosnap_*_daily)
-                    # azcopy ls "$CONTAINER/virtual/directory/prefix/$SAS" require READ permission for SAS
-                    # instead of LIST permission to filter files with virtual directory prefix
-                    # https://github.com/Azure/azure-storage-azcopy/issues/583
-                    # https://github.com/Azure/azure-storage-azcopy/issues/858
-                    # https://github.com/Azure/azure-storage-azcopy/issues/1546
-                    # may requires custom sorter to put complete `_monthly` after increasemental `_daily`: https://superuser.com/questions/489275/how-to-do-custom-sorting-using-unix-sort
-                    # https://mywiki.wooledge.org/BashPitfalls#local_var.3D.24.28cmd.29
-                    local latest_snapshot
-                    latest_snapshot=$(azcopy ls --output-type=json "$month_directory''${file_system#rpool/}/$SAS" \
-                        | jq -sr 'map(select(.MessageType == "ListObject")
-                                | .MessageContent | fromjson
-                                | select(.Path | contains("/") | not) | .Path)
-                            | sort | last')
-                    [[ -n $latest_snapshot ]] || return 0
-                    [[ $latest_snapshot != 'null' ]] || return 1
-                    zfs_send_to_azcopy "$file_system" "$snapshot" autosnap_"$latest_snapshot"
-                    ;;
-                autosnap_*_monthly)
-                    zfs_send_to_azcopy "$file_system" "$snapshot"
-            esac
+            for bucket in "''${buckets[@]}"
+            do
+                case $snapshot in
+                    autosnap_*_daily)
+                        # https://mywiki.wooledge.org/BashPitfalls#local_var.3D.24.28cmd.29
+                        local latest_snapshot
+                        latest_snapshot=$(${binary.rclone} lsjson -R "$bucket/$month_dir/''${file_system#rpool/}" \
+                            | ${binary.jq} -r 'map(select(.IsDir | not)) | sort_by(.ModTime) | last | .Path')
+                        [[ -n $latest_snapshot ]] || return 0
+                        [[ $latest_snapshot != 'null' ]] || return 1
+                        zfs_send_to_rclone "$bucket" "$file_system" "$snapshot" autosnap_"$latest_snapshot"
+                        ;;
+                    autosnap_*_monthly)
+                        zfs_send_to_rclone "$bucket" "$file_system" "$snapshot"
+                esac
+            done
         }
         mapfile -td, -c 1 -C process_snapshot < <(printf "%s\0" "$SANOID_SNAPNAMES")
         # order of frequency types in $SANOID_SNAPNAMES seems to be ensured by sanoid
@@ -96,7 +109,7 @@ let
         # https://stackoverflow.com/questions/917260/can-var-parameter-expansion-expressions-be-nested-in-bash
         local file_system_slash2dot=''${file_system//\//.}
         local file_system_without_rpool=''${file_system_slash2dot#rpool.}
-        local log_file=$bundledir/logs/$file_system_without_rpool.log
+        local log_file=${logsDir}/$file_system_without_rpool.log
         umask 177 # https://superuser.com/questions/1030110/what-is-the-difference-between-umask-and-chmod/1449322#1449322
         # https://stackoverflow.com/questions/75474417/bash-pv-outputting-m-at-the-end-of-each-line/75481792#75481792
         # https://stackoverflow.com/questions/70398228/transform-stream-sent-to-a-file-by-tee/70398383#70398383
@@ -105,7 +118,8 @@ let
         echo >> "$log_file" # extra newline
     }
 
-    azcopy ls --running-tally "$month_directory$SAS"
+    # https://unix.stackexchange.com/questions/471461/echo-list-array-to-xargs/471488#471488
+    printf "%s\n" "''${buckets[@]}" | xargs -I{} ${binary.rclone} lsl "{}/$month_dir"
     # https://github.com/jimsalterjrs/sanoid/issues/455
     # https://github.com/jimsalterjrs/sanoid/issues/104
     # https://stackoverflow.com/questions/918886/how-do-i-split-a-string-on-a-delimiter-in-bash/15988793#15988793
@@ -113,6 +127,20 @@ let
   '';
 in
 lib.mkMerge [
+  {
+    systemd.services.sanoid.serviceConfig =
+      lib.genAttrs [ "User" "Group" "ExecStartPre" "ExecStopPost" ] (
+        # https://github.com/NixOS/nixpkgs/blob/3acb677ea67d4c6218f33de0db0955f116b7588c/nixos/modules/services/backup/sanoid.nix#L248
+        _: "" |> lib.mkForce
+      )
+      // {
+        DynamicUser = false |> lib.mkForce;
+      };
+  }
+  {
+    systemd.tmpfiles.settings."sanoid-upload".${logsDir}."d" = { };
+    services.logrotate.settings."sanoid-upload".files = "${logsDir}/*.log";
+  }
   {
     services.sanoid.templates.default = {
       script_timeout = 0; # https://github.com/jimsalterjrs/sanoid/blob/a5fa5e7badecc435663e40e6a0f69523c2a0fd1c/sanoid#L1658
