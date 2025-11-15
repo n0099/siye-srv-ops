@@ -11,6 +11,7 @@
         ./rdbms.nix
         ./docker.nix
         ./ipv6.nix
+        ./sanoid.nix
         ./secrets
         ./containers
         "${base.inputs.nixpkgs.outPath}/nixos/modules/profiles/hardened.nix"
