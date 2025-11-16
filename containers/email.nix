@@ -141,23 +141,24 @@ lib.mkMerge [
           ]
           ++ [
             {
+              enableSubmission = true;
+              enableSubmissions = true;
               config = {
                 smtpd_tls_received_header = true;
-                smtpd_relay_restrictions = "permit_mynetworks permit_sasl_authenticated defer_unauth_destination reject_unknown_recipient_domain reject_unverified_recipient";
+                smtpd_tls_auth_only = true;
               };
               masterConfig =
                 lib.genAttrs
                   [
-                    # https://datatracker.ietf.org/doc/html/rfc8314#section-7.3
-                    "smtps"
+                    # https://github.com/NixOS/nixpkgs/blob/3acb677ea67d4c6218f33de0db0955f116b7588c/nixos/modules/services/mail/postfix.nix#L1066-L1123
+                    # https://github.com/NixOS/nixpkgs/blob/3acb677ea67d4c6218f33de0db0955f116b7588c/nixos/modules/services/mail/postfix.nix#L371-L395
                     "submission"
+                    # https://datatracker.ietf.org/doc/html/rfc8314#section-7.3
+                    # https://serverfault.com/questions/1018401/postfix-port-587-activated-by-uncommenting-a-line-in-master-cf-i-see-no-refere/1018407#1018407
+                    "submissions"
                   ]
                   (_: {
-                    # https://serverfault.com/questions/1018401/postfix-port-587-activated-by-uncommenting-a-line-in-master-cf-i-see-no-refere/1018407#1018407
-                    type = "inet";
-                    private = false;
                     chroot = true;
-                    command = "smtpd";
                   });
             }
           ]
@@ -186,7 +187,6 @@ lib.mkMerge [
                   unix_listener ${lmtpSocket} {
                     mode = 0600
                     user = postfix
-                    group = postfix
                   }
                 }
               '';
