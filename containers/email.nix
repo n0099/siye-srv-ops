@@ -194,6 +194,32 @@ lib.mkMerge [
           };
         }
       )
+      (
+        let
+          socketPathChrooted = "private/auth";
+          socketPath = "/var/lib/postfix/queue/${socketPathChrooted}"; # https://www.postfix.org/postconf.5.html#queue_directory
+        in
+        {
+          config.services = {
+            postfix.config = {
+              smtpd_sasl_type = "dovecot";
+              smtpd_sasl_path = socketPathChrooted;
+            };
+            # https://www.postfix.org/SASL_README.html#server_sasl_enable
+            dovecot2 = {
+              extraConfig = ''
+                # https://www.postfix.org/SASL_README.html#server_dovecot
+                service auth {
+                  unix_listener ${socketPath} {
+                    mode = 0600
+                    user = postfix
+                  }
+                }
+              '';
+            };
+          };
+        }
+      )
       {
         config.services.dovecot2 = {
           # https://doc.dovecot.org/2.3/configuration_manual/home_directories_for_virtual_users/
@@ -248,9 +274,6 @@ lib.mkMerge [
                   $config['product_name'] = '四叶伊美尔';
                   $config['imap_host'] = 'tls://localhost:143';
                   $config['smtp_host'] = 'tls://localhost:587';
-                  # https://github.com/roundcube/roundcubemail/blob/2ae7cec1ca7086a93500f05b3810f2cc9a16990f/config/defaults.inc.php#L273-L281
-                  $config['smtp_user'] = "";
-                  $config['smtp_pass'] = "";
                 '';
               };
               phpfpm.pools.roundcube.phpPackage = pkgs.php84 |> lib.mkForce; # https://github.com/NixOS/nixpkgs/blob/c8aa8cc00a5cb57fada0851a038d35c08a36a2bb/nixos/modules/services/mail/roundcube.nix#L264
@@ -412,7 +435,9 @@ lib.mkMerge [
             bindMounts."${dbConnect}".isReadOnly = true;
             config =
               let
-                sqlArgsFilePath = "dovecot/dovecot-sql.conf.ext";
+                argsFilePath = type: "dovecot/dovecot-passdb-sql-${type}.conf.ext";
+                lmtpArgsFilePath = argsFilePath "lmtp";
+                authArgsFilePath = argsFilePath "auth";
               in
               {
                 nixpkgs.overlays = [
@@ -425,27 +450,41 @@ lib.mkMerge [
                 services.dovecot2.extraConfig = ''
                   passdb {
                     driver = sql
-                    args = /etc/${sqlArgsFilePath}
+                    args = /etc/${lmtpArgsFilePath}
                   }
                   userdb {
                     driver = sql
-                    args = /etc/${sqlArgsFilePath}
+                    args = /etc/${lmtpArgsFilePath}
+                  }
+                  # https://doc.dovecot.org/2.3/configuration_manual/authentication/multiple_authentication_databases/
+                  passdb {
+                    driver = sql
+                    args = /etc/${authArgsFilePath}
                   }
                 '';
-                environment.etc.${sqlArgsFilePath}.text = ''
+                environment.etc.${lmtpArgsFilePath}.text = ''
                   !include ${dbConnect}
                   driver = mysql
-                  default_pass_scheme = ARGON2ID
+                  default_pass_scheme = ARGON2ID # https://doc.dovecot.org/2.3/configuration_manual/authentication/sql/#password-database-lookups
+
                   # https://doc.dovecot.org/2.3/admin_manual/system_users_used_by_dovecot/#uids
                   # https://systemd.io/UIDS-GIDS/
                   # https://man.archlinux.org/man/login.defs.5
                   user_query = \
                     SELECT username, uid, gid \
-                    FROM dovecot_users WHERE username = '%n' AND domain = '%d'
+                    FROM dovecot_passdb_lmtp WHERE username = '%n' AND domain = '%d'
                   password_query = \
                     SELECT username, domain, password \
-                    FROM dovecot_users WHERE username = '%n' AND domain = '%d'
-                  iterate_query = SELECT username AS user FROM dovecot_users
+                    FROM dovecot_passdb_lmtp WHERE username = '%n' AND domain = '%d'
+                  iterate_query = SELECT username AS user FROM dovecot_passdb_lmtp
+                '';
+                environment.etc.${authArgsFilePath}.text = ''
+                  !include ${dbConnect}
+                  driver = mysql
+                  default_pass_scheme = ARGON2ID
+                  password_query = \
+                    SELECT username, domain, password \
+                    FROM dovecot_passdb_auth WHERE username = '%n' AND domain = '%d'
                 '';
               };
           }
