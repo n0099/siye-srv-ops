@@ -25,7 +25,7 @@ let
     # https://docs.aws.amazon.com/AmazonS3/latest/userguide/qfacts.html
     # https://www.wolframalpha.com/input?i=10000%20*%20x%20MiB%20%3D%201TiB
     RCLONE_CONFIG_S3_CHUNK_SIZE=100Mi
-    RCLONE_CONFIG_S3_UPLOAD_CONCURRENCY=8
+    # RCLONE_CONFIG_S3_UPLOAD_CONCURRENCY=8
   '';
   script = pkgs.writeShellScript "sanoid-upload-script" ''
     # based on https://github.com/n0099/azcopy_sanoid_zfs_snapshot.sh
@@ -87,10 +87,10 @@ let
                     autosnap_*_daily)
                         # https://mywiki.wooledge.org/BashPitfalls#local_var.3D.24.28cmd.29
                         local latest_snapshot
-                        latest_snapshot=$(${binary.rclone} lsjson -R "$bucket/$month_dir/''${file_system#rpool/}" \
-                            | ${binary.jq} -r 'map(select(.IsDir | not)) | sort_by(.ModTime) | last | .Path')
-                        [[ -n $latest_snapshot ]] || return 0
-                        [[ $latest_snapshot != 'null' ]] || return 1
+                        latest_snapshot=$(${binary.rclone} lsjson --files-only "$bucket/$month_dir/''${file_system#rpool}" \
+                            | ${binary.jq} -r 'sort_by(.ModTime) | last | .Path')
+                        [[ -n $latest_snapshot ]] || continue
+                        [[ $latest_snapshot != 'null' ]] || continue
                         zfs_send_to_rclone "$bucket" "$file_system" "$snapshot" autosnap_"$latest_snapshot"
                         ;;
                     autosnap_*_monthly)
