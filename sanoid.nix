@@ -51,6 +51,7 @@ let
     read -ra buckets <<< "$BUCKETS"
 
     month_dir=$(date -u +%Y-%m)
+    prefix=rpool/ENC/
 
     zfs_send_to_rclone() {
         local bucket=$1
@@ -72,7 +73,7 @@ let
             | ${binary.pv} -pterabfs "$send_size" \
             | ${binary.time} -v ${binary.rclone} rcat \
                 --error-on-no-transfer --ignore-existing \
-                "$bucket/$month_dir/''${file_system#rpool/}/''${snapshot#autosnap_}"
+                "$bucket/$month_dir/''${file_system#''${prefix}}/''${snapshot#autosnap_}"
         # https://forum.rclone.org/t/copyto-fail-on-error-and-dont-overwrite-files/47736
     }
 
@@ -87,7 +88,7 @@ let
                     autosnap_*_daily)
                         # https://mywiki.wooledge.org/BashPitfalls#local_var.3D.24.28cmd.29
                         local latest_snapshot
-                        latest_snapshot=$(${binary.rclone} lsjson --files-only "$bucket/$month_dir/''${file_system#rpool}" \
+                        latest_snapshot=$(${binary.rclone} lsjson --files-only "$bucket/$month_dir/''${file_system#''${prefix}}" \
                             | ${binary.jq} -r 'sort_by(.ModTime) | last | .Path')
                         [[ -n $latest_snapshot ]] || continue
                         [[ $latest_snapshot != 'null' ]] || continue
@@ -107,9 +108,9 @@ let
     process_file_system() {
         local file_system=$2
         # https://stackoverflow.com/questions/917260/can-var-parameter-expansion-expressions-be-nested-in-bash
-        local file_system_slash2dot=''${file_system//\//.}
-        local file_system_without_rpool=''${file_system_slash2dot#rpool.}
-        local log_file=${logsDir}/$file_system_without_rpool.log
+        local file_system_without_prefix=''${file_system#''${prefix}}
+        local file_system_slash2dot=''${file_system_without_prefix//\//.}
+        local log_file=${logsDir}/$file_system_slash2dot.log
         umask 177 # https://superuser.com/questions/1030110/what-is-the-difference-between-umask-and-chmod/1449322#1449322
         # https://stackoverflow.com/questions/75474417/bash-pv-outputting-m-at-the-end-of-each-line/75481792#75481792
         # https://stackoverflow.com/questions/70398228/transform-stream-sent-to-a-file-by-tee/70398383#70398383
@@ -145,7 +146,6 @@ lib.mkMerge [
     services.sanoid.templates.default = {
       script_timeout = 0; # https://github.com/jimsalterjrs/sanoid/blob/a5fa5e7badecc435663e40e6a0f69523c2a0fd1c/sanoid#L1658
       post_snapshot_script = "sh -c '${script} >/dev/null 2>&1'";
-      # post_snapshot_script = "${script}";
     };
   }
 ]
