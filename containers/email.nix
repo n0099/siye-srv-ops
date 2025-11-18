@@ -35,12 +35,14 @@ lib.mkMerge [
           # https://brokkr.net/2018/06/04/setting-up-postfix-and-dovecot-slowly-and-properly/
           postfix.enable = true;
           dovecot2.enable = true;
+          roundcube.enable = true;
         };
       }
       (
         let
+          commonName = "n0099.net";
           cert = rec {
-            dir = "/etc/ssl/certs/n0099.net";
+            dir = "/etc/ssl/certs/${commonName}";
             cert = "${dir}/fullchain.pem";
             privateKey = "${dir}/privkey.pem";
           };
@@ -51,118 +53,116 @@ lib.mkMerge [
             postfix = {
               sslCert = cert.cert;
               sslKey = cert.privateKey;
-              config = {
-                # https://utcc.utoronto.ca/~cks/space/blog/spam/TLSExternalTypes-2025-05
-                lmtp_tls_protocols = ">=TLSv1.3";
-                smtp_tls_protocols = ">=TLSv1.3";
-                smtpd_tls_protocols = ">=TLSv1.2";
-              };
             };
             dovecot2 = {
               sslServerCert = cert.cert;
               sslServerKey = cert.privateKey;
-              extraConfig = ''
-                # https://doc.dovecot.org/2.3/configuration_manual/dovecot_ssl_configuration/
-                ssl = required
-                ssl_min_protocol = TLSv1.3
-              '';
             };
-            roundcube.extraConfig =
-              let
-                commonName = "n0099.net";
-              in
-              ''
-                # https://www.roundcubeforum.net/index.php?topic=22035.0
-                $config['imap_conn_options']['ssl']['peer_name'] ='${commonName}';
-                $config['smtp_conn_options']['ssl']['peer_name'] ='${commonName}';
-              '';
+            roundcube.extraConfig = ''
+              # https://www.roundcubeforum.net/index.php?topic=22035.0
+              $config['imap_conn_options']['ssl']['peer_name'] ='${commonName}';
+              $config['smtp_conn_options']['ssl']['peer_name'] ='${commonName}';
+            '';
           };
         }
       )
       {
-        config.services.postfix = lib.mkMerge (
-          [
-            # https://www.postfix.org/postconf.5.html
-            {
-              hostname = "n0099.net";
-              destination = [
-                "localhost.$mydomain"
-                "localhost"
+        config = lib.mkMerge [
+          {
+            services.postfix.config = {
+              # https://utcc.utoronto.ca/~cks/space/blog/spam/TLSExternalTypes-2025-05
+              lmtp_tls_protocols = ">=TLSv1.3";
+              smtp_tls_protocols = ">=TLSv1.3";
+              smtpd_tls_protocols = ">=TLSv1.2";
+            };
+            services.dovecot2.extraConfig = ''
+              # https://doc.dovecot.org/2.3/configuration_manual/dovecot_ssl_configuration/
+              ssl = required
+              ssl_min_protocol = TLSv1.3
+            '';
+          }
+          {
+            services.postfix.config = {
+              tls_append_default_CA = true;
+              smtp_tls_session_cache_database = "btree:\${data_directory}/smtp_scache";
+              smtpd_tls_received_header = true;
+              smtpd_tls_auth_only = true;
+            };
+          }
+          {
+            services.dovecot2.enableDHE = true;
+            security.dhparams = config.security.dhparams;
+          }
+        ];
+      }
+      {
+        config.services.postfix = lib.mkMerge [
+          # https://www.postfix.org/postconf.5.html
+          {
+            hostname = "n0099.net";
+            destination = [
+              "localhost.$mydomain"
+              "localhost"
+            ];
+            config.sender_bcc_maps = "inline:{ @n0099.net=n+sent@n0099.net }"; # https://stackoverflow.com/questions/755853/postfix-send-a-copy-of-every-email-to-a-given-email-address/13611467#13611467
+          }
+          {
+            networks = [
+              "172.16.0.0/12"
+              "127.0.0.0/8"
+              "[::ffff:127.0.0.0]/104"
+              "[::1]/128"
+            ];
+            config.mailbox_size_limit = 0;
+            recipientDelimiter = "+";
+          }
+          (
+            let
+              virtualDomains = [
+                "n0099.net"
+                "mcbar.club"
+                "simcity.moe"
               ];
-              config.sender_bcc_maps = "inline:{ @n0099.net=n+sent@n0099.net }"; # https://stackoverflow.com/questions/755853/postfix-send-a-copy-of-every-email-to-a-given-email-address/13611467#13611467
-            }
+            in
             {
-              networks = [
-                "172.16.0.0/12"
-                "127.0.0.0/8"
-                "[::ffff:127.0.0.0]/104"
-                "[::1]/128"
-              ];
-              config.mailbox_size_limit = 0;
-              recipientDelimiter = "+";
-            }
-            (
-              let
-                virtualDomains = [
-                  "n0099.net"
-                  "mcbar.club"
-                  "simcity.moe"
-                ];
-              in
-              {
-                virtual =
-                  (
-                    [
-                      "z@n0099.net z@n0099.net"
-                    ]
-                    ++ (virtualDomains |> map (domain: "@${domain} n@n0099.net"))
-                  )
-                  |> lib.concatStringsSep "\n";
-                config.virtual_mailbox_domains = virtualDomains;
-              }
-            )
-          ]
-          ++ [
-            {
-              relayHost = "smtp.azurecomm.net";
-              relayPort = 587;
-              config = {
-                smtp_sasl_auth_enable = true;
-                smtp_sender_dependent_authentication = true;
-                smtp_sasl_tls_security_options = "noanonymous"; # https://www.postfix.org/SASL_README.html#client_sasl_policy
-              };
-            }
-            {
-              config = {
-                tls_append_default_CA = true;
-                smtp_tls_session_cache_database = "btree:\${data_directory}/smtp_scache";
-              };
-            }
-          ]
-          ++ [
-            {
-              enableSubmission = true;
-              enableSubmissions = true;
-              config = {
-                smtpd_tls_received_header = true;
-                smtpd_tls_auth_only = true;
-              };
-              masterConfig =
-                lib.genAttrs
+              virtual =
+                (
                   [
-                    # https://github.com/NixOS/nixpkgs/blob/3acb677ea67d4c6218f33de0db0955f116b7588c/nixos/modules/services/mail/postfix.nix#L1066-L1123
-                    # https://github.com/NixOS/nixpkgs/blob/3acb677ea67d4c6218f33de0db0955f116b7588c/nixos/modules/services/mail/postfix.nix#L371-L395
-                    "submission"
-                    # https://datatracker.ietf.org/doc/html/rfc8314#section-7.3
-                    # https://serverfault.com/questions/1018401/postfix-port-587-activated-by-uncommenting-a-line-in-master-cf-i-see-no-refere/1018407#1018407
-                    "submissions"
+                    "z@n0099.net z@n0099.net"
                   ]
-                  (_: {
-                    chroot = true;
-                  });
+                  ++ (virtualDomains |> map (domain: "@${domain} n@n0099.net"))
+                )
+                |> lib.concatStringsSep "\n";
+              config.virtual_mailbox_domains = virtualDomains;
             }
-          ]
-        );
+          )
+          {
+            relayHost = "smtp.azurecomm.net";
+            relayPort = 587;
+            config = {
+              smtp_sasl_auth_enable = true;
+              smtp_sender_dependent_authentication = true;
+              smtp_sasl_tls_security_options = "noanonymous"; # https://www.postfix.org/SASL_README.html#client_sasl_policy
+            };
+          }
+          {
+            enableSubmission = true;
+            enableSubmissions = true;
+            masterConfig =
+              lib.genAttrs
+                [
+                  # https://github.com/NixOS/nixpkgs/blob/3acb677ea67d4c6218f33de0db0955f116b7588c/nixos/modules/services/mail/postfix.nix#L1066-L1123
+                  # https://github.com/NixOS/nixpkgs/blob/3acb677ea67d4c6218f33de0db0955f116b7588c/nixos/modules/services/mail/postfix.nix#L371-L395
+                  "submission"
+                  # https://datatracker.ietf.org/doc/html/rfc8314#section-7.3
+                  # https://serverfault.com/questions/1018401/postfix-port-587-activated-by-uncommenting-a-line-in-master-cf-i-see-no-refere/1018407#1018407
+                  "submissions"
+                ]
+                (_: {
+                  chroot = true;
+                });
+          }
+        ];
       }
       (
         let
@@ -232,12 +232,6 @@ lib.mkMerge [
         };
       }
       {
-        config = {
-          services.dovecot2.enableDHE = true;
-          security.dhparams = config.security.dhparams;
-        };
-      }
-      {
         config =
           { pkgs, ... }:
 
@@ -267,7 +261,6 @@ lib.mkMerge [
           {
             services = {
               roundcube = {
-                enable = true;
                 hostName = "n0099.net";
                 extraConfig = ''
                   $config['support_url'] = 'https://z.n0099.net';
