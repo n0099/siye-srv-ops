@@ -227,7 +227,7 @@ lib.mkMerge [
           mailLocation = "mdbox:~/mdbox";
           extraConfig = ''
             mail_home = /var/mail/%u
-            auth_mechanisms = plain # https://doc.dovecot.org/2.3/configuration_manual/authentication/#authentication-in-proxies-and-directors
+            auth_mechanisms = plain login # https://github.com/MoeNetwork/Tieba-Cloud-Sign/issues/295
           '';
         };
       }
