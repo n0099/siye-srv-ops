@@ -18,7 +18,7 @@
     let
       mysqlSocket = "/run/mysqld/mysqld.sock";
     in
-    lib.mkMerge [
+    [
       { bindMounts.${mysqlSocket}.isReadOnly = true; }
       (
         let
@@ -57,77 +57,47 @@
         }
       )
       (
+        with {
+          inherit (import ./dovecot-passdb.nix config)
+            dbConnect
+            genArgsFilePath
+            genDovecotPassDB
+            containerConfig
+            ;
+        };
         let
-          dbConnect = config.age.secrets."dovecot.db.connect".path;
+          lmtpArgsFilePath = genArgsFilePath "lmtp";
         in
-        {
-          bindMounts."${dbConnect}".isReadOnly = true;
-          config =
-            let
-              genArgsFilePath = type: "dovecot/dovecot-passdb-sql-${type}.conf.ext";
-              lmtpArgsFilePath = genArgsFilePath "lmtp";
-              authArgsFilePath = genArgsFilePath "auth";
-              genConfig = argsFilePath: {
+        [
+          containerConfig
+          {
+            config = lib.mkMerge [
+              (genDovecotPassDB lmtpArgsFilePath)
+              {
                 services.dovecot2.extraConfig = ''
-                  passdb {
+                  userdb {
                     driver = sql
-                    args = /etc/${argsFilePath}
+                    args = /etc/${lmtpArgsFilePath}
                   }
                 '';
-                environment.etc.${argsFilePath}.text = ''
-                  !include ${dbConnect}
-                  driver = mysql
-                  default_pass_scheme = ARGON2ID # https://doc.dovecot.org/2.3/configuration_manual/authentication/sql/#password-database-lookups
+                environment.etc.${lmtpArgsFilePath}.text = ''
+                  # https://doc.dovecot.org/2.3/admin_manual/system_users_used_by_dovecot/#uids
+                  # https://systemd.io/UIDS-GIDS/
+                  # https://man.archlinux.org/man/login.defs.5
+                  user_query = \
+                    SELECT username, uid, gid \
+                    FROM dovecot_passdb_lmtp WHERE username = '%n' AND domain = '%d'
+                  password_query = \
+                    SELECT username, domain, password \
+                    FROM dovecot_passdb_lmtp WHERE username = '%n' AND domain = '%d'
+                  iterate_query = SELECT username AS user FROM dovecot_passdb_lmtp
                 '';
-              };
-            in
-            lib.mkMerge (
-              [
-                {
-                  nixpkgs.overlays = [
-                    (self: super: {
-                      # https://github.com/NixOS/nixpkgs/blob/78e34d1667d32d8a0ffc3eba4591ff256e80576e/pkgs/by-name/do/dovecot/package.nix#L37
-                      # https://github.com/NixOS/nixpkgs/pull/14898
-                      dovecot = super.dovecot.override { withMySQL = true; };
-                    })
-                  ];
-                }
-              ]
-              ++ [
-                (genConfig lmtpArgsFilePath)
-                {
-                  services.dovecot2.extraConfig = ''
-                    userdb {
-                      driver = sql
-                      args = /etc/${lmtpArgsFilePath}
-                    }
-                  '';
-                  environment.etc.${lmtpArgsFilePath}.text = ''
-                    # https://doc.dovecot.org/2.3/admin_manual/system_users_used_by_dovecot/#uids
-                    # https://systemd.io/UIDS-GIDS/
-                    # https://man.archlinux.org/man/login.defs.5
-                    user_query = \
-                      SELECT username, uid, gid \
-                      FROM dovecot_passdb_lmtp WHERE username = '%n' AND domain = '%d'
-                    password_query = \
-                      SELECT username, domain, password \
-                      FROM dovecot_passdb_lmtp WHERE username = '%n' AND domain = '%d'
-                    iterate_query = SELECT username AS user FROM dovecot_passdb_lmtp
-                  '';
-                }
-              ]
-              ++ [
-                (genConfig authArgsFilePath) # https://doc.dovecot.org/2.3/configuration_manual/authentication/multiple_authentication_databases/
-                {
-                  environment.etc.${authArgsFilePath}.text = ''
-                    password_query = \
-                      SELECT username, domain, password \
-                      FROM dovecot_passdb_auth WHERE username = '%n' AND domain = '%d'
-                  '';
-                }
-              ]
-            );
-        }
+              }
+            ];
+          }
+        ]
       )
-    ];
+    ]
+    |> lib.flatten
+    |> lib.mkMerge;
 }
