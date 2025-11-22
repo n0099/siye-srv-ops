@@ -99,21 +99,10 @@ lib.mkMerge [
         config.services.postfix = lib.mkMerge [
           # https://www.postfix.org/postconf.5.html
           {
-            hostname = "n0099.net";
-            destination = [
-              "localhost.$mydomain"
-              "localhost"
-            ];
-            config.sender_bcc_maps = "inline:{ @n0099.net=n+sent@n0099.net }"; # https://stackoverflow.com/questions/755853/postfix-send-a-copy-of-every-email-to-a-given-email-address/13611467#13611467
-          }
-          {
-            networks = [
-              "172.16.0.0/12"
-              "127.0.0.0/8"
-              "[::ffff:127.0.0.0]/104"
-              "[::1]/128"
-            ];
-            config.mailbox_size_limit = 0;
+            config = {
+              sender_bcc_maps = "inline:{ @n0099.net=n+sent@n0099.net }"; # https://stackoverflow.com/questions/755853/postfix-send-a-copy-of-every-email-to-a-given-email-address/13611467#13611467
+              mailbox_size_limit = 0;
+            };
             recipientDelimiter = "+";
           }
           (
@@ -200,23 +189,33 @@ lib.mkMerge [
           socketPath = "/var/lib/postfix/queue/${socketPathChrooted}"; # https://www.postfix.org/postconf.5.html#queue_directory
         in
         {
-          config.services = {
-            postfix.config = {
-              smtpd_sasl_type = "dovecot";
-              smtpd_sasl_path = socketPathChrooted;
-            };
-            # https://www.postfix.org/SASL_README.html#server_sasl_enable
-            dovecot2 = {
-              extraConfig = ''
-                # https://www.postfix.org/SASL_README.html#server_dovecot
-                service auth {
-                  unix_listener ${socketPath} {
-                    mode = 0600
-                    user = postfix
+          config = {
+            services = {
+              postfix.config = {
+                smtpd_sasl_type = "dovecot";
+                smtpd_sasl_path = socketPathChrooted;
+              };
+              # https://www.postfix.org/SASL_README.html#server_sasl_enable
+              dovecot2 = {
+                extraConfig = ''
+                  # https://www.postfix.org/SASL_README.html#server_dovecot
+                  service auth {
+                    unix_listener ${socketPath} {
+                      mode = 0600
+                      user = postfix
+                    }
                   }
-                }
-              '';
+                '';
+              };
             };
+            systemd.services.dovecot2 =
+              let
+                postfix = [ "postfix.service" ];
+              in
+              {
+                after = postfix;
+                requires = postfix;
+              };
           };
         }
       )
