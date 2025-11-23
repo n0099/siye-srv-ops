@@ -28,7 +28,7 @@ let
     # RCLONE_CONFIG_S3_UPLOAD_CONCURRENCY=8
   '';
   script = pkgs.writeShellScript "sanoid-upload-script" ''
-    # based on https://github.com/n0099/azcopy_sanoid_zfs_snapshot.sh
+    # based on https://github.com/n0099/azcopy_sanoid_zfs_snapshot.sh/tree/4380663fab1b44c05fee3a28d9572b7887ce614d
 
     # https://mywiki.wooledge.org/BashFAQ/105
     # https://gist.github.com/mohanpedala/1e2ff5661761d3abd0385e8223e16425
@@ -59,13 +59,15 @@ let
       local snapshot=$3
       local latest_snapshot=''${4-}
       local send_params=()
+      # https://stackoverflow.com/questions/3953645/ternary-operator-in-bash/25119904#25119904
       [[ -n $latest_snapshot ]] \
         && send_params+=('-i' "$file_system@$latest_snapshot" "$file_system@$snapshot") \
         || send_params+=("$file_system@$snapshot")
 
       # https://mywiki.wooledge.org/BashPitfalls#local_var.3D.24.28cmd.29
       local send_size
-      send_size=$(${binary.zfs} send -LcPn "''${send_params[@]}" | awk '/^size/{print $2}')
+      send_size=$(${binary.zfs} send -LcPn "''${send_params[@]}" \
+        | awk '/^size/{print $2}')
       [[ $send_size -gt 0 ]] || return 0
 
       # https://mywiki.wooledge.org/BashFAQ/050
@@ -88,8 +90,9 @@ let
             autosnap_*_daily)
               # https://mywiki.wooledge.org/BashPitfalls#local_var.3D.24.28cmd.29
               local latest_snapshot
-              latest_snapshot=$(${binary.rclone} lsjson --files-only "$bucket/$month_dir/''${file_system#''${prefix}}" \
-                | ${binary.jq} -r 'sort_by(.ModTime) | last | .Path')
+              latest_snapshot=$(${binary.rclone} lsjson --files-only \
+                "$bucket/$month_dir/''${file_system#''${prefix}}" \
+                  | ${binary.jq} -r 'sort_by(.ModTime) | last | .Path')
               [[ -n $latest_snapshot ]] || continue
               [[ $latest_snapshot != 'null' ]] || continue
               zfs_send_to_rclone "$bucket" "$file_system" "$snapshot" autosnap_"$latest_snapshot"
