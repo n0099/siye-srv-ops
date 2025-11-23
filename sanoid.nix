@@ -54,69 +54,69 @@ let
     prefix=rpool/ENC/
 
     zfs_send_to_rclone() {
-        local bucket=$1
-        local file_system=$2
-        local snapshot=$3
-        local latest_snapshot=''${4-}
-        local send_params=()
-        [[ -n $latest_snapshot ]] \
-            && send_params+=('-i' "$file_system@$latest_snapshot" "$file_system@$snapshot") \
-            || send_params+=("$file_system@$snapshot")
+      local bucket=$1
+      local file_system=$2
+      local snapshot=$3
+      local latest_snapshot=''${4-}
+      local send_params=()
+      [[ -n $latest_snapshot ]] \
+        && send_params+=('-i' "$file_system@$latest_snapshot" "$file_system@$snapshot") \
+        || send_params+=("$file_system@$snapshot")
 
-        # https://mywiki.wooledge.org/BashPitfalls#local_var.3D.24.28cmd.29
-        local send_size
-        send_size=$(${binary.zfs} send -LcPn "''${send_params[@]}" | awk '/^size/{print $2}')
-        [[ $send_size -gt 0 ]] || return 0
+      # https://mywiki.wooledge.org/BashPitfalls#local_var.3D.24.28cmd.29
+      local send_size
+      send_size=$(${binary.zfs} send -LcPn "''${send_params[@]}" | awk '/^size/{print $2}')
+      [[ $send_size -gt 0 ]] || return 0
 
-        # https://mywiki.wooledge.org/BashFAQ/050
-        ${binary.time} -v ${binary.zfs} send -LcP "''${send_params[@]}" \
-            | ${binary.pv} -pterabfs "$send_size" \
-            | ${binary.time} -v ${binary.rclone} rcat \
-                --error-on-no-transfer --ignore-existing \
-                "$bucket/$month_dir/''${file_system#''${prefix}}/''${snapshot#autosnap_}"
-        # https://forum.rclone.org/t/copyto-fail-on-error-and-dont-overwrite-files/47736
+      # https://mywiki.wooledge.org/BashFAQ/050
+      ${binary.time} -v ${binary.zfs} send -LcP "''${send_params[@]}" \
+        | ${binary.pv} -pterabfs "$send_size" \
+        | ${binary.time} -v ${binary.rclone} rcat \
+          --error-on-no-transfer --ignore-existing \
+          "$bucket/$month_dir/''${file_system#''${prefix}}/''${snapshot#autosnap_}"
+      # https://forum.rclone.org/t/copyto-fail-on-error-and-dont-overwrite-files/47736
     }
 
     process_snapshots() {
-        file_system=$1 # share with process_snapshot()
-        # shellcheck disable=SC2317
-        process_snapshot() {
-            local snapshot=$2
-            for bucket in "''${buckets[@]}"
-            do
-                case $snapshot in
-                    autosnap_*_daily)
-                        # https://mywiki.wooledge.org/BashPitfalls#local_var.3D.24.28cmd.29
-                        local latest_snapshot
-                        latest_snapshot=$(${binary.rclone} lsjson --files-only "$bucket/$month_dir/''${file_system#''${prefix}}" \
-                            | ${binary.jq} -r 'sort_by(.ModTime) | last | .Path')
-                        [[ -n $latest_snapshot ]] || continue
-                        [[ $latest_snapshot != 'null' ]] || continue
-                        zfs_send_to_rclone "$bucket" "$file_system" "$snapshot" autosnap_"$latest_snapshot"
-                        ;;
-                    autosnap_*_monthly)
-                        zfs_send_to_rclone "$bucket" "$file_system" "$snapshot"
-                esac
-            done
-        }
-        mapfile -td, -c 1 -C process_snapshot < <(printf "%s\0" "$SANOID_SNAPNAMES")
-        # order of frequency types in $SANOID_SNAPNAMES seems to be ensured by sanoid
-        # https://github.com/jimsalterjrs/sanoid/blob/a5fa5e7badecc435663e40e6a0f69523c2a0fd1c/sanoid#L146
-        # https://github.com/jimsalterjrs/sanoid/blob/a5fa5e7badecc435663e40e6a0f69523c2a0fd1c/sanoid#L585
+      file_system=$1 # share with process_snapshot()
+      # shellcheck disable=SC2317
+      process_snapshot() {
+        local snapshot=$2
+        for bucket in "''${buckets[@]}"
+        do
+          case $snapshot in
+            autosnap_*_daily)
+              # https://mywiki.wooledge.org/BashPitfalls#local_var.3D.24.28cmd.29
+              local latest_snapshot
+              latest_snapshot=$(${binary.rclone} lsjson --files-only "$bucket/$month_dir/''${file_system#''${prefix}}" \
+                | ${binary.jq} -r 'sort_by(.ModTime) | last | .Path')
+              [[ -n $latest_snapshot ]] || continue
+              [[ $latest_snapshot != 'null' ]] || continue
+              zfs_send_to_rclone "$bucket" "$file_system" "$snapshot" autosnap_"$latest_snapshot"
+              ;;
+            autosnap_*_monthly)
+              zfs_send_to_rclone "$bucket" "$file_system" "$snapshot"
+          esac
+        done
+      }
+      mapfile -td, -c 1 -C process_snapshot < <(printf "%s\0" "$SANOID_SNAPNAMES")
+      # order of frequency types in $SANOID_SNAPNAMES seems to be ensured by sanoid
+      # https://github.com/jimsalterjrs/sanoid/blob/a5fa5e7badecc435663e40e6a0f69523c2a0fd1c/sanoid#L146
+      # https://github.com/jimsalterjrs/sanoid/blob/a5fa5e7badecc435663e40e6a0f69523c2a0fd1c/sanoid#L585
     }
 
     process_file_system() {
-        local file_system=$2
-        # https://stackoverflow.com/questions/917260/can-var-parameter-expansion-expressions-be-nested-in-bash
-        local file_system_without_prefix=''${file_system#''${prefix}}
-        local file_system_slash2dot=''${file_system_without_prefix//\//.}
-        local log_file=${logsDir}/$file_system_slash2dot.log
-        umask 177 # https://superuser.com/questions/1030110/what-is-the-difference-between-umask-and-chmod/1449322#1449322
-        # https://stackoverflow.com/questions/75474417/bash-pv-outputting-m-at-the-end-of-each-line/75481792#75481792
-        # https://stackoverflow.com/questions/70398228/transform-stream-sent-to-a-file-by-tee/70398383#70398383
-        process_snapshots "$file_system" 2>&1 \
-            | tee >(stdbuf -oL tr "\r" "\n" >> "$log_file")
-        echo >> "$log_file" # extra newline
+      local file_system=$2
+      # https://stackoverflow.com/questions/917260/can-var-parameter-expansion-expressions-be-nested-in-bash
+      local file_system_without_prefix=''${file_system#''${prefix}}
+      local file_system_slash2dot=''${file_system_without_prefix//\//.}
+      local log_file=${logsDir}/$file_system_slash2dot.log
+      umask 177 # https://superuser.com/questions/1030110/what-is-the-difference-between-umask-and-chmod/1449322#1449322
+      # https://stackoverflow.com/questions/75474417/bash-pv-outputting-m-at-the-end-of-each-line/75481792#75481792
+      # https://stackoverflow.com/questions/70398228/transform-stream-sent-to-a-file-by-tee/70398383#70398383
+      process_snapshots "$file_system" 2>&1 \
+        | tee >(stdbuf -oL tr "\r" "\n" >> "$log_file")
+      echo >> "$log_file" # extra newline
     }
 
     # https://unix.stackexchange.com/questions/471461/echo-list-array-to-xargs/471488#471488
