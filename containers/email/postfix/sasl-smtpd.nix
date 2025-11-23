@@ -42,7 +42,7 @@
     ]
     ++ (
       with {
-        inherit (import ./dovecot-passdb.nix config)
+        inherit (import ../dovecot/passdb.nix config)
           genArgsFilePath
           genDovecotPassDB
           containerConfig

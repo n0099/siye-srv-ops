@@ -4,9 +4,9 @@
   imports = [
     ./tls.nix
     ./mysql.nix
-    ./postfix.nix
-    ./smtpd-sasl.nix
-    ./dovecot.nix
+    ./postfix
+    ./postfix/sasl-smtpd.nix
+    ./dovecot
     ./roundcube.nix
   ];
   config = {

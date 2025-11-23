@@ -61,7 +61,7 @@
     )
     ++ (
       with {
-        inherit (import ./dovecot-passdb.nix config)
+        inherit (import ./dovecot/passdb.nix config)
           dbConnect
           genArgsFilePath
           genDovecotPassDB
