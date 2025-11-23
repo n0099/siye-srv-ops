@@ -7,6 +7,7 @@
 
 let
   logsDir = "/var/log/sanoid-upload";
+  zfs = "/run/booted-system/sw/bin/zfs"; # https://github.com/NixOS/nixpkgs/blob/3acb677ea67d4c6218f33de0db0955f116b7588c/nixos/modules/services/backup/sanoid.nix#L109
   script = pkgs.writeShellApplication {
     name = "sanoid-upload.sh";
     bashOptions = [
@@ -22,7 +23,6 @@ let
       jq
       time
       rclone
-      "/run/booted-system/sw/bin/zfs" # https://github.com/NixOS/nixpkgs/blob/3acb677ea67d4c6218f33de0db0955f116b7588c/nixos/modules/services/backup/sanoid.nix#L109
     ];
     runtimeEnv = {
       # https://forum.rclone.org/t/multiple-config-rclone-conf-files/38219
@@ -50,12 +50,13 @@ let
 
       # https://unix.stackexchange.com/questions/79064/how-to-export-variables-from-a-file/79077#79077
       set -o allexport
+      # shellcheck disable=SC1091
       source "${config.age.secrets."sanoid.upload.env".path}"
       set +o allexport
 
       # https://stackoverflow.com/questions/5564418/exporting-an-array-in-bash-script/21941473#21941473
       # https://stackoverflow.com/questions/1469849/how-to-split-one-string-into-multiple-strings-separated-by-at-least-one-space-in/30212526#30212526
-      read -ra buckets <<< "$BUCKETS"
+      read -ra buckets <<< "''${BUCKETS:?env var \$BUCKETS is not set}"
 
       month_dir=$(date -u +%Y-%m)
       prefix=rpool/ENC/
@@ -73,16 +74,16 @@ let
 
         # https://mywiki.wooledge.org/BashPitfalls#local_var.3D.24.28cmd.29
         local send_size
-        send_size=$(zfs send -LcPn "''${send_params[@]}" \
+        send_size=$(${zfs} send -LcPn "''${send_params[@]}" \
           | awk '/^size/{print $2}')
         [[ $send_size -gt 0 ]] || return 0
 
         # https://mywiki.wooledge.org/BashFAQ/050
-        time -v zfs send -LcP "''${send_params[@]}" \
+        command time -v ${zfs} send -LcP "''${send_params[@]}" \
           | pv -pterabfs "$send_size" \
-          | time -v rclone rcat \
+          | command time -v rclone rcat \
             --error-on-no-transfer --ignore-existing \
-            "$bucket/$month_dir/''${file_system#''${prefix}}/''${snapshot#autosnap_}"
+            "$bucket/$month_dir/''${file_system#"''${prefix}"}/''${snapshot#autosnap_}"
         # https://forum.rclone.org/t/copyto-fail-on-error-and-dont-overwrite-files/47736
       }
 
@@ -98,7 +99,7 @@ let
                 # https://mywiki.wooledge.org/BashPitfalls#local_var.3D.24.28cmd.29
                 local latest_snapshot
                 latest_snapshot=$(rclone lsjson --files-only \
-                  "$bucket/$month_dir/''${file_system#''${prefix}}" \
+                  "$bucket/$month_dir/''${file_system#"''${prefix}"}" \
                     | jq -r 'sort_by(.ModTime) | last | .Path')
                 [[ -n $latest_snapshot ]] || continue
                 [[ $latest_snapshot != 'null' ]] || continue
@@ -118,7 +119,7 @@ let
       process_file_system() {
         local file_system=$2
         # https://stackoverflow.com/questions/917260/can-var-parameter-expansion-expressions-be-nested-in-bash
-        local file_system_without_prefix=''${file_system#''${prefix}}
+        local file_system_without_prefix=''${file_system#"''${prefix}"}
         local file_system_slash2dot=''${file_system_without_prefix//\//.}
         local log_file=${logsDir}/$file_system_slash2dot.log
         umask 177 # https://superuser.com/questions/1030110/what-is-the-difference-between-umask-and-chmod/1449322#1449322
