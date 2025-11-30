@@ -74,12 +74,12 @@ let
 
         # https://mywiki.wooledge.org/BashPitfalls#local_var.3D.24.28cmd.29
         local send_size
-        send_size=$(${zfs} send -LcPn "''${send_params[@]}" \
+        send_size=$(${zfs} send -wLcPn "''${send_params[@]}" \
           | awk '/^size/{print $2}')
         [[ $send_size -gt 0 ]] || return 0
 
         # https://mywiki.wooledge.org/BashFAQ/050
-        command time -v ${zfs} send -LcP "''${send_params[@]}" \
+        command time -v ${zfs} send -wLcP "''${send_params[@]}" \
           | pv -pterabfs "$send_size" \
           | command time -v rclone rcat \
             --error-on-no-transfer --ignore-existing \
