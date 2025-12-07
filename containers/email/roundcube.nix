@@ -9,7 +9,7 @@
         {
           services = {
             roundcube = {
-              hostName = "n0099.net";
+              hostName = "n0099.com";
               extraConfig = ''
                 $config['support_url'] = 'https://z.n0099.net';
                 $config['product_name'] = '四叶伊美尔';

@@ -68,7 +68,7 @@ lib.mkMerge [
             # https://www.postfix.org/postconf.5.html
             {
               config = {
-                sender_bcc_maps = "inline:{ @n0099.net=n+sent@n0099.net }"; # https://stackoverflow.com/questions/755853/postfix-send-a-copy-of-every-email-to-a-given-email-address/13611467#13611467
+                sender_bcc_maps = "inline:{ @n0099.com=n+sent@n0099.com }"; # https://stackoverflow.com/questions/755853/postfix-send-a-copy-of-every-email-to-a-given-email-address/13611467#13611467
                 mailbox_size_limit = 0;
               };
               recipientDelimiter = "+";
@@ -76,6 +76,7 @@ lib.mkMerge [
             (
               let
                 virtualDomains = [
+                  "n0099.com"
                   "n0099.net"
                   "mcbar.club"
                   "simcity.moe"
@@ -87,7 +88,7 @@ lib.mkMerge [
                     [
                       "z@n0099.net z@n0099.net"
                     ]
-                    ++ (virtualDomains |> map (domain: "@${domain} n@n0099.net"))
+                    ++ (virtualDomains |> map (domain: "@${domain} n@n0099.com"))
                   )
                   |> lib.concatStringsSep "\n";
                 config.virtual_mailbox_domains = virtualDomains;
