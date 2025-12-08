@@ -14,9 +14,12 @@
       {
         bindMounts.${cert.dir}.isReadOnly = true;
         config.services = {
-          postfix = {
-            sslCert = cert.cert;
-            sslKey = cert.privateKey;
+          postfix.settings.main = {
+            smtpd_tls_chain_files = [
+              cert.cert
+              cert.privateKey
+            ];
+            smtpd_tls_security_level = "may";
           };
           dovecot2 = {
             sslServerCert = cert.cert;
@@ -33,7 +36,7 @@
     {
       config = lib.mkMerge [
         {
-          services.postfix.config = {
+          services.postfix.settings.main = {
             # https://utcc.utoronto.ca/~cks/space/blog/spam/TLSExternalTypes-2025-05
             lmtp_tls_protocols = ">=TLSv1.3";
             smtp_tls_protocols = ">=TLSv1.3";
@@ -46,7 +49,7 @@
           '';
         }
         {
-          services.postfix.config = {
+          services.postfix.settings.main = {
             tls_append_default_CA = true;
             smtp_tls_session_cache_database = "btree:\${data_directory}/smtp_scache";
             smtpd_tls_received_header = true;

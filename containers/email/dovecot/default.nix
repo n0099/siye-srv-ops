@@ -8,7 +8,7 @@
       in
       {
         config.services = {
-          postfix.config.virtual_transport = "lmtp:unix:${lmtpSocket}";
+          postfix.settings.main.virtual_transport = "lmtp:unix:${lmtpSocket}";
           dovecot2 = {
             enableLmtp = true;
             extraConfig = ''

@@ -11,7 +11,7 @@
         {
           config = {
             services = {
-              postfix.config = {
+              postfix.settings.main = {
                 smtpd_sasl_type = "dovecot";
                 smtpd_sasl_path = socketPathChrooted;
               };
@@ -28,7 +28,7 @@
                 '';
               };
             };
-            systemd.services.dovecot2 =
+            systemd.services.dovecot =
               let
                 postfix = [ "postfix.service" ];
               in

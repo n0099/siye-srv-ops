@@ -21,7 +21,7 @@ lib.mkMerge [
         config.services.postfix = {
           enableSubmission = true;
           enableSubmissions = true;
-          masterConfig =
+          settings.master =
             lib.genAttrs
               [
                 # https://github.com/NixOS/nixpkgs/blob/3acb677ea67d4c6218f33de0db0955f116b7588c/nixos/modules/services/mail/postfix.nix#L1066-L1123
@@ -43,9 +43,8 @@ lib.mkMerge [
       [
         {
           config.services.postfix = {
-            relayHost = "smtp.azurecomm.net";
-            relayPort = 587;
-            config = {
+            settings.main = {
+              relayhost = [ "smtp.azurecomm.net:587" ];
               smtp_sasl_auth_enable = true;
               smtp_sender_dependent_authentication = true;
               smtp_sasl_tls_security_options = "noanonymous"; # https://www.postfix.org/SASL_README.html#client_sasl_policy
@@ -58,7 +57,7 @@ lib.mkMerge [
           in
           {
             bindMounts."${sasl}".isReadOnly = true;
-            config.services.postfix.config.smtp_sasl_password_maps = "texthash:${sasl}"; # https://discourse.nixos.org/t/porting-my-postfix-gmail-smtp-to-nixos/30286/12
+            config.services.postfix.settings.main.smtp_sasl_password_maps = "texthash:${sasl}"; # https://discourse.nixos.org/t/porting-my-postfix-gmail-smtp-to-nixos/30286/12
           }
         )
       ]
@@ -67,11 +66,11 @@ lib.mkMerge [
           config.services.postfix = lib.mkMerge [
             # https://www.postfix.org/postconf.5.html
             {
-              config = {
+              settings.main = {
                 sender_bcc_maps = "inline:{ @n0099.com=n+sent@n0099.com }"; # https://stackoverflow.com/questions/755853/postfix-send-a-copy-of-every-email-to-a-given-email-address/13611467#13611467
                 mailbox_size_limit = 0;
+                recipientDelimiter = "+";
               };
-              recipientDelimiter = "+";
             }
             (
               let
