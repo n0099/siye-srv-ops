@@ -16,8 +16,8 @@
         config.services = {
           postfix.settings.main = {
             smtpd_tls_chain_files = [
-              cert.cert
               cert.privateKey
+              cert.cert
             ];
             smtpd_tls_security_level = "may";
           };

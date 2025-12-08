@@ -89,7 +89,7 @@ let
 
       process_snapshots() {
         file_system=$1 # share with process_snapshot()
-        # shellcheck disable=SC2317
+        # shellcheck disable=SC2329
         process_snapshot() {
           local snapshot=$2
           for bucket in "''${buckets[@]}"
