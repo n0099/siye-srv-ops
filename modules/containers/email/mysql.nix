@@ -39,7 +39,7 @@
                     age = {
                       identityPaths = [ hostPrivateKey ];
                       secrets.${secretName} = {
-                        file = ../../secrets/roundcube.db.password.age;
+                        file = ../../../secrets/roundcube.db.password.age;
                         symlink = false;
                         owner = "nginx";
                       };
@@ -63,7 +63,7 @@
         )
         ++ (
           with {
-            inherit (import ./dovecot/passdb.nix config)
+            inherit (import ./dovecot/_passdb.nix config)
               dbConnect
               genArgsFilePath
               genDovecotPassDB
