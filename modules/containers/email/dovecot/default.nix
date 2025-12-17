@@ -1,7 +1,7 @@
 { lib, ... }:
 
 {
-  containers.email = lib.mkMerge [
+  flake.modules.nixos."containers/email/dovecot".containers.email = lib.mkMerge [
     (
       let
         lmtpSocket = "/run/dovecot-lmtp";

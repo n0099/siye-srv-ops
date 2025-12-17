@@ -1,7 +1,7 @@
 { lib, ... }:
 
 {
-  containers.email = lib.mkMerge [
+  flake.modules.nixos."containers/email/roundcube".containers.email = lib.mkMerge [
     {
       config =
         { pkgs, ... }:
