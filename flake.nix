@@ -2,20 +2,29 @@
   inputs.base.url = "./base";
   outputs =
     { base, ... }@inputs:
-    (base.outputs.withModules inputs {
-      nixos = [
-        ./configuration.nix
-        ./system.nix
-        ./march.nix
-        ./nginx.nix
-        ./rdbms.nix
-        ./docker.nix
-        ./ipv6.nix
-        ./sanoid.nix
-        ./secrets
-        ./containers
-        "${base.inputs.nixpkgs.outPath}/nixos/modules/profiles/hardened.nix"
+
+    with { inherit (base.inputs) flake-parts import-tree; };
+    flake-parts.lib.mkFlake { inputs = base.inputs // inputs; } {
+      systems = [ "x86_64-linux" ];
+      imports = [
+        flake-parts.flakeModules.modules
+        (import-tree [
+          ./base/modules
+          ./modules
+        ])
+      ]
+      ++ [
+        {
+          flake.modules.nixos = {
+            secrets.imports = [
+              ./base/secrets
+              ./secrets
+            ];
+            configuration.imports = [ ./configuration.nix ];
+            hardened.imports = [ "${base.inputs.nixpkgs.outPath}/nixos/modules/profiles/hardened.nix" ];
+          };
+        }
       ];
-      home-manager = [ ./home/n0099.nix ];
-    });
+    };
+
 }
