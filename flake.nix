@@ -21,7 +21,7 @@
               ./secrets
             ];
             configuration.imports = [ ./configuration.nix ];
-            hardened.imports = [ "${base.inputs.nixpkgs.outPath}/nixos/modules/profiles/hardened.nix" ];
+            # hardened.imports = [ "${base.inputs.nixpkgs.outPath}/nixos/modules/profiles/hardened.nix" ];
           };
         }
       ];
