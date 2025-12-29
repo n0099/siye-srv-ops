@@ -1,5 +1,5 @@
 {
-  flake.modules.nixos.system =
+  flake.modules.nixos.misc =
     { lib, pkgs, ... }:
 
     lib.mkMerge [
