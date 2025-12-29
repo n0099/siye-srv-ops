@@ -8,12 +8,6 @@
     }:
 
     let
-      originSecondLevelDomains = [
-        "n0099.net"
-        "simcity.moe"
-      ];
-      originDomains =
-        (addWWWDomains originSecondLevelDomains) ++ originSecondLevelDomains ++ [ "z.n0099.net" ];
       proxyPassByUrl = {
         "z.n0099.net" = [ { "/" = "127.0.0.1:9002"; } ];
         "simcity.moe" = [ { "/" = "127.0.0.1:9003"; } ];
@@ -80,14 +74,6 @@
                 |> map (lib.mapAttrs (_: proxyPass: { proxyPass = "http://${proxyPass}"; }))
                 |> lib.mkMerge;
             }) proxyPassByUrl)
-            (lib.genAttrs originDomains (_: {
-              extraConfig = ''
-                ssl_protocols TLSv1.2 TLSv1.3; # https://repost.aws/en/questions/QUzNusy9axTz2iWIyfK1q-nw/feature-cloudfront-origin-tls-v1-3
-                ssl_session_cache shared:SSL:32m;
-                ssl_session_timeout 1d;
-                ssl_ciphers EECDH+AESGCM:EDH+AESGCM; # https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/secure-connections-supported-ciphers-cloudfront-to-origin.html
-              '';
-            }))
             {
               "z.n0099.net" = {
                 locations = {
