@@ -7,69 +7,24 @@
       ...
     }:
 
-    let
-      secondLevelDomain =
-        domain: domain |> lib.splitString "." |> lib.takeEnd 2 |> lib.concatStringsSep ".";
-      certByDomain =
-        domain:
-        let
-          certBasePath = "/etc/ssl/certs/${secondLevelDomain domain}";
-        in
-        {
-          forceSSL = true;
-          sslCertificate = "${certBasePath}/fullchain.pem"; # https://stackoverflow.com/questions/26191463/ssl-error0b080074x509-certificate-routinesx509-check-private-keykey-values/41154564#41154564
-          sslCertificateKey = "${certBasePath}/privkey.pem";
-        };
-      baseDomains =
-        config.n0099.nginx.baseUrls |> map (lib.splitString "/") |> map lib.head |> lib.unique;
-      withWWWSubDomain = map (domain: "www.${domain}");
-    in
     {
-      n0099.nginx = {
-        proxyPassByUrl = {
-          "z.n0099.net" = [ { "/" = "127.0.0.1:9002"; } ];
-          "simcity.moe" = [ { "/" = "127.0.0.1:9003"; } ];
-          "mcbar.club" = [ { "/" = "127.0.0.1:9004"; } ];
-          "n0099.net" = [
-            { "/v" = "127.0.0.1:9005"; }
-            { "/tc" = "127.0.0.1:9006"; }
-            { "/pma" = "127.0.0.1:9007"; }
-            { "/tbm/v1" = "127.0.0.1:9008"; }
-            { "/tbm/be" = "127.0.0.1:9009"; }
-            { "/tbm" = "127.0.0.1:3001"; }
-            { "/rc" = config.containers.email.localAddress; }
-          ];
-        };
-        baseUrls =
-          config.n0099.nginx.proxyPassByUrl
-          |> lib.mapAttrsToList (
-            domain: urlPathsKeyByProxyPass:
-            urlPathsKeyByProxyPass
-            |> lib.concatMap (
-              urlPathKeyByProxyPass:
-              let
-                concatBaseUrl = path: "${domain}${lib.optionalString (path != "/") path}";
-              in
-              urlPathKeyByProxyPass |> lib.attrNames |> map concatBaseUrl
-            )
-          )
-          |> lib.flatten;
+      n0099.nginx.proxyPassByUrl = {
+        "z.n0099.net" = [ { "/" = "127.0.0.1:9002"; } ];
+        "simcity.moe" = [ { "/" = "127.0.0.1:9003"; } ];
+        "mcbar.club" = [ { "/" = "127.0.0.1:9004"; } ];
+        "n0099.net" = [
+          { "/v" = "127.0.0.1:9005"; }
+          { "/tc" = "127.0.0.1:9006"; }
+          { "/pma" = "127.0.0.1:9007"; }
+          { "/tbm/v1" = "127.0.0.1:9008"; }
+          { "/tbm/be" = "127.0.0.1:9009"; }
+          { "/tbm" = "127.0.0.1:3001"; }
+          { "/rc" = config.containers.email.localAddress; }
+        ];
       };
       services.nginx = lib.mkMerge [
         {
           virtualHosts = lib.mkMerge [
-            (lib.genAttrs baseDomains certByDomain)
-            (lib.genAttrs
-              # https://news.ycombinator.com/item?id=2455864
-              (baseDomains |> map secondLevelDomain |> lib.unique |> withWWWSubDomain)
-              (
-                domain:
-                certByDomain domain
-                // {
-                  locations."/".return = "301 https://${secondLevelDomain domain}";
-                }
-              )
-            )
             {
               "z.n0099.net" = {
                 locations = {
