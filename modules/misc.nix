@@ -4,7 +4,8 @@
 
     lib.mkMerge [
       {
-        boot.kernelPackages = pkgs.linuxPackages_6_17;
+        boot.zfs.package = pkgs.zfs_2_4;
+        boot.kernelPackages = pkgs.linuxPackages_6_18;
       }
       {
         networking.hostId = "c7635afd";
