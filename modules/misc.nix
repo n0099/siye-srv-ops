@@ -12,7 +12,7 @@
         boot.zfs.devNodes = "/dev/disk/by-partuuid"; # https://discourse.nixos.org/t/21-05-zfs-root-install-cant-import-pool-on-boot/13652/7
       }
       {
-        services.qemuGuest.enable = true;
+        n0099.stdenv.enable = true;
       }
     ];
 }

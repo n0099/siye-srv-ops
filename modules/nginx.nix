@@ -129,7 +129,7 @@
               '';
             }
             {
-              "/rc".extraConfig = ''
+              "/rc/".extraConfig = ''
                 more_set_headers "X-Frame-Options: SAMEORIGIN"; # https://github.com/roundcube/roundcubemail/issues/6882
               '';
             }
