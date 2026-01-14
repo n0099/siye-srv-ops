@@ -4,8 +4,11 @@
 
     lib.mkMerge [
       {
+        n0099.cachyos = {
+          enable = true;
+          variant = "server-lto";
+        };
         boot.zfs.package = pkgs.zfs_2_4;
-        boot.kernelPackages = pkgs.linuxPackages_6_18;
       }
       {
         networking.hostId = "c7635afd";
