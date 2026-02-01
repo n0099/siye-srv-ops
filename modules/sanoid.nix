@@ -103,9 +103,10 @@
                     latest_snapshot=$(rclone lsjson --files-only \
                       "$bucket/$month_dir/''${file_system#"''${prefix}"}" \
                         | jq -r 'sort_by(.ModTime) | last | .Path')
-                    [[ -n $latest_snapshot ]] || continue
-                    [[ $latest_snapshot != 'null' ]] || continue
-                    zfs_send_to_rclone "$bucket" "$file_system" "$snapshot" autosnap_"$latest_snapshot"
+                    if [[ -n $latest_snapshot ]] && [[ $latest_snapshot != 'null' ]]
+                    then
+                      zfs_send_to_rclone "$bucket" "$file_system" "$snapshot" autosnap_"$latest_snapshot"
+                    fi
                     ;;
                   autosnap_*_monthly)
                     zfs_send_to_rclone "$bucket" "$file_system" "$snapshot"
@@ -132,8 +133,6 @@
             echo >> "$log_file" # extra newline
           }
 
-          # https://unix.stackexchange.com/questions/471461/echo-list-array-to-xargs/471488#471488
-          printf "%s\n" "''${buckets[@]}" | xargs -I{} rclone lsl "{}/$month_dir"
           # https://github.com/jimsalterjrs/sanoid/issues/455
           # https://github.com/jimsalterjrs/sanoid/issues/104
           # https://stackoverflow.com/questions/918886/how-do-i-split-a-string-on-a-delimiter-in-bash/15988793#15988793
