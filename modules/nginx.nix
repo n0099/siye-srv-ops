@@ -48,6 +48,15 @@
                 # to allow urls bypass the `location / {}` block
                 locations = lib.genAttrs locations (_: { });
               };
+              permanentRedirectTo = target: {
+                # https://stackoverflow.com/questions/42136829/whats-the-difference-between-http-301-and-308-status-codes
+                return = "308 ${target}";
+                extraConfig = ''
+                  # https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/http-3xx-status-codes.html
+                  add_header Cache-Control max-age=${daysToSeconds 7};
+                '';
+              };
+              daysToSeconds = days: days * 24 * 60 * 60 |> toString;
             in
             lib.mkMerge [
               {
@@ -69,7 +78,7 @@
                   httpErrorPages
                   {
                     locations = {
-                      "/".return = "301 https://n0099.com$request_uri";
+                      "/" = permanentRedirectTo "https://n0099.com$request_uri";
                     }
                     // {
                       "= /mc".return = "302 $request_uri/";
@@ -91,10 +100,10 @@
                     {
                       locations = {
                         "/tbm/v1/".extraConfig = ''
-                          add_header Cache-Control 'max-age=${365 * 24 * 60 * 60 |> toString}, immutable';
+                          add_header Cache-Control 'max-age=${daysToSeconds 365}, immutable';
                         '';
-                        "~ ^/tbm/tbm/([^\\r\\n]*)".return = "301 /tbm/$1"; # temp fix for google seo due to https://github.com/harlan-zw/nuxt-site-config/issues/32
-                        "/posts/".return = "301 /tbm$request_uri"; # temp fix for google trying to crawl https://n0099.net/posts/*
+                        "~ ^/tbm/tbm/([^\\r\\n]*)" = permanentRedirectTo "/tbm/$1"; # temp fix for google seo due to https://github.com/harlan-zw/nuxt-site-config/issues/32
+                        "/posts/" = permanentRedirectTo "/tbm$request_uri"; # temp fix for google trying to crawl https://n0099.net/posts/*
                       };
                     }
                   ]
