@@ -90,6 +90,9 @@
                   ++ [
                     {
                       locations = {
+                        "/tbm/v1/".extraConfig = ''
+                          add_header Cache-Control 'max-age=${365 * 24 * 60 * 60 |> toString}, immutable';
+                        '';
                         "~ ^/tbm/tbm/([^\\r\\n]*)".return = "301 /tbm/$1"; # temp fix for google seo due to https://github.com/harlan-zw/nuxt-site-config/issues/32
                         "/posts/".return = "301 /tbm$request_uri"; # temp fix for google trying to crawl https://n0099.net/posts/*
                       };
