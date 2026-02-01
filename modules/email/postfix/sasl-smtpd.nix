@@ -59,7 +59,7 @@
               config = lib.mkMerge [
                 (genDovecotPassDB authArgsFilePath) # https://doc.dovecot.org/2.3/configuration_manual/authentication/multiple_authentication_databases/
                 {
-                  environment.etc.${authArgsFilePath}.text = ''
+                  environment.etc.${authArgsFilePath}.text = /* sql */ ''
                     password_query = \
                       SELECT username, domain, password \
                       FROM dovecot_passdb_auth WHERE username = '%n' AND domain = '%d'

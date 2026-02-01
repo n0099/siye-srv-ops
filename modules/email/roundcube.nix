@@ -10,7 +10,7 @@
           services = {
             roundcube = {
               hostName = "n0099.com";
-              extraConfig = ''
+              extraConfig = /* php_only */ ''
                 $config['support_url'] = 'https://z.n0099.net';
                 $config['product_name'] = '四叶伊美尔';
                 $config['imap_host'] = 'tls://localhost:143';
@@ -63,7 +63,8 @@
               roundcube.configureNginx = false;
               nginx = {
                 enable = true;
-                virtualHosts.${cfg.roundcube.hostName}.locations = {
+                virtualHosts."${cfg.roundcube.hostName}".locations = {
+                  # https://github.com/calops/hmts.nvim/issues/36
                   # https://github.com/NixOS/nixpkgs/blob/78e34d1667d32d8a0ffc3eba4591ff256e80576e/nixos/modules/services/mail/roundcube.nix#L182-L211
                   "/rc/" = {
                     index = "index.php";
@@ -101,7 +102,7 @@
             in
             {
               systemd.tmpfiles.settings."www-root".${alias}."L+".argument = cfg.roundcube.package.outPath;
-              services.nginx.virtualHosts.${cfg.roundcube.hostName} = {
+              services.nginx.virtualHosts."${cfg.roundcube.hostName}" = {
                 inherit root;
                 locations = {
                   "/rc/".alias = "${alias}/";

@@ -51,7 +51,7 @@
                         dbname = "email";
                         username = "email";
                       };
-                      extraConfig = ''
+                      extraConfig = /* php_only */ ''
                         $config['db_dsnw'] = preg_replace('#^pgsql://#', 'mysql://', $config['db_dsnw']);
                         $config['db_prefix'] = 'roundcube_';
                       '';
@@ -85,7 +85,7 @@
                       args = /etc/${lmtpArgsFilePath}
                     }
                   '';
-                  environment.etc.${lmtpArgsFilePath}.text = ''
+                  environment.etc.${lmtpArgsFilePath}.text = /* sql */ ''
                     # https://doc.dovecot.org/2.3/admin_manual/system_users_used_by_dovecot/#uids
                     # https://systemd.io/UIDS-GIDS/
                     # https://man.archlinux.org/man/login.defs.5

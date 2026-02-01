@@ -27,7 +27,7 @@
                 sslServerCert = cert.cert;
                 sslServerKey = cert.privateKey;
               };
-              roundcube.extraConfig = ''
+              roundcube.extraConfig = /* php_only */ ''
                 # https://www.roundcubeforum.net/index.php?topic=22035.0
                 $config['imap_conn_options']['ssl']['peer_name'] ='${commonName}';
                 $config['smtp_conn_options']['ssl']['peer_name'] ='${commonName}';
