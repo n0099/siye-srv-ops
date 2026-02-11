@@ -1,5 +1,8 @@
 {
-  inputs.base.url = "./base";
+  inputs = {
+    base.url = "./base";
+    self.submodules = true; # https://github.com/NixOS/nix/pull/12421
+  };
   outputs =
     { base, ... }@inputs:
 
