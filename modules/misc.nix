@@ -8,6 +8,9 @@
           enable = true;
           variant = "server-lto";
         };
+      }
+      {
+        n0099.cachyos.baseKernel = pkgs.linuxPackages_6_18.kernel;
         boot.zfs.package = pkgs.zfs_2_4;
       }
       {
