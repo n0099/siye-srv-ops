@@ -24,6 +24,8 @@ services:
       dockerfile: $PWD/fe.Dockerfile
     init: true # https://github.com/nodejs/docker-node/blob/655ca3407c7fdc5544a385242a7c0805115cd280/docs/BestPractices.md#handling-kernel-signals
     env_file: ./fe.env
+    extra_hosts:
+      n0099.com: host-gateway
     ports:
       - target: 3000
         published: 3001
