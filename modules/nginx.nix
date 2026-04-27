@@ -102,6 +102,14 @@
                         "/tbm/v1/".extraConfig = ''
                           add_header Cache-Control 'max-age=${daysToSeconds 365}, immutable';
                         '';
+                        "~ '/tbm/imgsrc/([0-9a-f]{40}|[0-9a-f]{24})'" = {
+                          # https://github.com/lumina37/aiotieba/pull/63#issuecomment-2447263162
+                          proxyPass = "https://imgsrc.baidu.com/forum/pic/item/$1.jpg";
+                          recommendedProxySettings = false;
+                          extraConfig = ''
+                            proxy_set_header Referer https://tieba.baidu.com/;
+                          '';
+                        };
                         "~ ^/tbm/tbm/([^\\r\\n]*)" = permanentRedirectTo "/tbm/$1"; # temp fix for google seo due to https://github.com/harlan-zw/nuxt-site-config/issues/32
                         "/posts/" = permanentRedirectTo "/tbm$request_uri"; # temp fix for google trying to crawl https://n0099.net/posts/*
                       };
