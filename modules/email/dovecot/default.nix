@@ -30,7 +30,7 @@
         mailLocation = "mdbox:~/mdbox";
         extraConfig = ''
           mail_home = /var/mail/%u
-          auth_mechanisms = plain login # https://github.com/MoeNetwork/Tieba-Cloud-Sign/issues/295
+          auth_mechanisms = plain # https://github.com/NixOS/nixpkgs/blob/755f5aa91337890c432639c60b6064bb7fe67769/nixos/modules/services/mail/dovecot.nix#L153
         '';
       };
     }
