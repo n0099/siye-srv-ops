@@ -30,7 +30,7 @@
         # https://doc.dovecot.org/2.3/settings/pigeonhole/#pigeonhole_setting-sieve
         mail_location = "mdbox:~/mdbox";
         mail_home = "/var/mail/%u";
-        auth_mechanisms = "plain"; # https://github.com/NixOS/nixpkgs/blob/755f5aa91337890c432639c60b6064bb7fe67769/nixos/modules/services/mail/dovecot.nix#L153
+        auth_mechanisms = [ "plain" ]; # https://github.com/NixOS/nixpkgs/blob/19c56ae874977658f33ab06c04520b1848c3e4b7/nixos/modules/services/mail/dovecot.nix#L427
       };
     }
     {
