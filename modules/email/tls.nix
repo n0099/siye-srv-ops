@@ -1,6 +1,6 @@
 {
   flake.modules.nixos."containers/email/tls" =
-    { config, lib, ... }:
+    { lib, ... }:
 
     {
       containers.email = lib.mkMerge [
@@ -57,10 +57,6 @@
                 smtpd_tls_received_header = true;
                 smtpd_tls_auth_only = true;
               };
-            }
-            {
-              services.dovecot2.enableDHE = true;
-              security.dhparams = config.security.dhparams;
             }
           ];
         }
