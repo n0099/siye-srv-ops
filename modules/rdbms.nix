@@ -6,7 +6,7 @@
       services = {
         mysql = {
           enable = true;
-          package = pkgs.mysql80;
+          package = pkgs.mysql84;
           settings.mysqld = lib.mkMerge [
             {
               skip_name_resolve = false; # https://serverfault.com/questions/393862/mysql-warning-ip-address-could-not-be-resolved/393874#393874
