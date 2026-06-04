@@ -14,21 +14,20 @@
               config = {
                 services = {
                   postfix.settings.main = {
+                    # https://www.postfix.org/SASL_README.html#server_sasl_enable
                     smtpd_sasl_type = "dovecot";
                     smtpd_sasl_path = socketPathChrooted;
                   };
-                  # https://www.postfix.org/SASL_README.html#server_sasl_enable
-                  dovecot2 = {
-                    extraConfig = ''
+                  dovecot2.settings.service = [
+                    {
                       # https://www.postfix.org/SASL_README.html#server_dovecot
-                      service auth {
-                        unix_listener ${socketPath} {
-                          mode = 0600
-                          user = postfix
-                        }
-                      }
-                    '';
-                  };
+                      _section.name = "auth";
+                      "unix_listener ${socketPath}" = {
+                        mode = "0600";
+                        user = "postfix";
+                      };
+                    }
+                  ];
                 };
                 systemd.services.dovecot =
                   let

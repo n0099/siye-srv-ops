@@ -23,9 +23,9 @@
                 ];
                 smtpd_tls_security_level = "may";
               };
-              dovecot2 = {
-                sslServerCert = cert.cert;
-                sslServerKey = cert.privateKey;
+              dovecot2.settings = {
+                ssl_cert = cert.cert;
+                ssl_key = cert.privateKey;
               };
               roundcube.extraConfig = /* php_only */ ''
                 # https://www.roundcubeforum.net/index.php?topic=22035.0
@@ -44,11 +44,11 @@
                 smtp_tls_protocols = ">=TLSv1.3";
                 smtpd_tls_protocols = ">=TLSv1.2";
               };
-              services.dovecot2.extraConfig = ''
+              services.dovecot2.settings = {
                 # https://doc.dovecot.org/2.3/configuration_manual/dovecot_ssl_configuration/
-                ssl = required
-                ssl_min_protocol = TLSv1.3
-              '';
+                ssl = "required";
+                ssl_min_protocol = "TLSv1.3";
+              };
             }
             {
               services.postfix.settings.main = {

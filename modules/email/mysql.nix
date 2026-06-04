@@ -79,12 +79,10 @@
               config = lib.mkMerge [
                 (genDovecotPassDB lmtpArgsFilePath)
                 {
-                  services.dovecot2.extraConfig = ''
-                    userdb {
-                      driver = sql
-                      args = /etc/${lmtpArgsFilePath}
-                    }
-                  '';
+                  services.dovecot2.settings.userdb = {
+                    driver = "sql";
+                    args = "/etc/${lmtpArgsFilePath}";
+                  };
                   environment.etc.${lmtpArgsFilePath}.text = /* sql */ ''
                     # https://doc.dovecot.org/2.3/admin_manual/system_users_used_by_dovecot/#uids
                     # https://systemd.io/UIDS-GIDS/
