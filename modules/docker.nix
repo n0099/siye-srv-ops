@@ -1,13 +1,12 @@
 {
   flake.modules.nixos.docker =
-    { lib, pkgs, ... }:
+    { lib, ... }:
 
     lib.mkMerge [
       {
         users.users.n0099.extraGroups = [ "docker" ];
         virtualisation.docker = {
           enable = true;
-          package = pkgs.docker_28;
           autoPrune.enable = true;
           # https://old.reddit.com/r/zfs/comments/17nlapu/docker_on_zfs_best_practices/
           # https://github.com/openzfs/zfs/issues/15581
