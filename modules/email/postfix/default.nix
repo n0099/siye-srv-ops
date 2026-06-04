@@ -92,7 +92,7 @@
                         ++ (virtualDomains |> map (domain: "@${domain} n@n0099.com"))
                       )
                       |> lib.concatStringsSep "\n";
-                    config.virtual_mailbox_domains = virtualDomains;
+                    settings.main.virtual_mailbox_domains = virtualDomains;
                   }
                 )
               ];
