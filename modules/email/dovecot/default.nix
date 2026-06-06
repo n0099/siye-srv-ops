@@ -38,7 +38,7 @@
         { pkgs, ... }:
 
         {
-          environment.systemPackages = [ pkgs.dovecot_pigeonhole ];
+          environment.systemPackages = [ pkgs.dovecot_pigeonhole_0_5 ]; # https://github.com/NixOS/nixpkgs/blob/6b316287bae2ee04c9b93c8c858d930fd07d7338/nixos/modules/services/mail/dovecot.nix#L168
           services.dovecot2 = {
             # https://doc.dovecot.org/2.3/configuration_manual/sieve/configuration/#basic-configuration
             mailPlugins.perProtocol.lmtp.enable = [ "sieve" ];
