@@ -31,7 +31,7 @@
               {
                 bindMounts."${hostPrivateKey}".isReadOnly = true;
                 config =
-                  { ... }@container:
+                  { config, ... }:
 
                   {
                     # https://wiki.nixos.org/wiki/Agenix#Access_secrets_inside_a_container
@@ -47,7 +47,7 @@
                     services.roundcube = {
                       database = {
                         host = "unix(${mysqlSocket})";
-                        passwordFile = container.config.age.secrets.${secretName}.path;
+                        passwordFile = config.age.secrets.${secretName}.path;
                         dbname = "email";
                         username = "email";
                       };

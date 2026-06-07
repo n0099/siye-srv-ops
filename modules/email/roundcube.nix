@@ -51,10 +51,10 @@
     }
     {
       config =
-        { ... }@container:
+        { config, ... }:
 
         let
-          cfg = container.config.services;
+          cfg = config.services;
           subBaseDir = "/rc";
           root = "/srv/www";
           alias = "${root}${subBaseDir}";
