@@ -17,7 +17,7 @@
                 $config['smtp_host'] = 'tls://localhost:587';
               '';
             };
-            phpfpm.pools.roundcube.phpPackage = pkgs.php84 |> lib.mkForce; # https://github.com/NixOS/nixpkgs/blob/c8aa8cc00a5cb57fada0851a038d35c08a36a2bb/nixos/modules/services/mail/roundcube.nix#L264
+            phpfpm.pools.roundcube.phpPackage = pkgs.php85 |> lib.mkForce; # https://github.com/NixOS/nixpkgs/pull/520143/changes/3f732679b813e1a56dc907c50fa85d698e4a568e
           };
           systemd.services = {
             # https://github.com/NixOS/nixpkgs/blob/c8aa8cc00a5cb57fada0851a038d35c08a36a2bb/nixos/modules/services/mail/roundcube.nix#L274
