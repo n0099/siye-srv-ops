@@ -24,8 +24,8 @@
                 smtpd_tls_security_level = "may";
               };
               dovecot2.settings = {
-                ssl_cert = cert.cert;
-                ssl_key = cert.privateKey;
+                ssl_cert = "<${cert.cert}";
+                ssl_key = "<${cert.privateKey}";
               };
               roundcube.extraConfig = /* php_only */ ''
                 # https://www.roundcubeforum.net/index.php?topic=22035.0

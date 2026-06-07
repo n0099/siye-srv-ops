@@ -10,7 +10,7 @@
         config.services = {
           postfix.settings.main.virtual_transport = "lmtp:unix:${lmtpSocket}";
           dovecot2.settings = {
-            protocols.lmtp = true;
+            protocols = "imap lmtp";
             service = [
               {
                 _section.name = "lmtp";
