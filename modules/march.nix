@@ -8,7 +8,7 @@
     };
     nix.gc.automatic = false |> lib.mkForce;
     nixpkgs.overlays = [
-      (final: prev: {
+      (_: prev: {
         libtpms = prev.libtpms.overrideAttrs (prev: {
           # https://github.com/NixOS/nixpkgs/issues/528643
           configureFlags = (prev.configureFlags or [ ]) ++ [ "CFLAGS=-march=x86-64-v3" ];
