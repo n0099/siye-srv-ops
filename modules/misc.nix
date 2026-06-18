@@ -16,6 +16,15 @@
         };
         networking.hostId = "c7635afd";
         n0099.sanoid.enable = true;
+        services.sanoid.datasets =
+          lib.genAttrs
+            (map (dataset: "rpool/ENC/${dataset}") [
+              "NIX-BUILD"
+              "NIX-BUILD-LOG"
+            ])
+            (_: {
+              autosnap = false;
+            });
       }
       {
         n0099.stdenv.enable = true;
