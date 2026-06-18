@@ -19,5 +19,5 @@ let
 in
 {
   inherit dbConnect genArgsFilePath genDovecotPassDB;
-  containerConfig.bindMounts."${dbConnect}".isReadOnly = true;
+  containerConfig.bindMounts.${dbConnect}.isReadOnly = true;
 }

@@ -58,7 +58,7 @@
                 sasl = config.age.secrets."postfix.sasl".path;
               in
               {
-                bindMounts."${sasl}".isReadOnly = true;
+                bindMounts.${sasl}.isReadOnly = true;
                 config.services.postfix.settings.main.smtp_sasl_password_maps = "texthash:${sasl}"; # https://discourse.nixos.org/t/porting-my-postfix-gmail-smtp-to-nixos/30286/12
               }
             )

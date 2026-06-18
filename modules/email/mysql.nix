@@ -29,7 +29,7 @@
                 secretName = "roundcube.db.password";
               in
               {
-                bindMounts."${hostPrivateKey}".isReadOnly = true;
+                bindMounts.${hostPrivateKey}.isReadOnly = true;
                 config =
                   { config, ... }:
 
