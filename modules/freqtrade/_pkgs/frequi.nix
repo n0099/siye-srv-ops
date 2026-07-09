@@ -12,18 +12,18 @@
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "frequi";
-  version = "3.0.2";
+  version = "3.1.0";
   src = fetchFromGitHub {
     owner = "freqtrade";
     repo = "frequi";
     tag = finalAttrs.version;
-    hash = "sha256-VPTI4Ahtue2jG1aX2wk5mzvY0I8GUUsC2x5+dkQAiKo=";
+    hash = "sha256-Z8qG/N2Njy/Ya69y8rN7+V309HnoeHjn0yZqGXx2Sxw=";
   };
   pnpmDeps = fetchPnpmDeps {
     inherit (finalAttrs) pname version src;
     pnpm = pnpm_11; # https://github.com/freqtrade/frequi/blob/7d8a81c1022fa39dffbcd69f45a01767259dd4de/package.json#L68
     fetcherVersion = 4;
-    hash = "sha256-osFooH0LMeYWdRShKrd0eSxgJFCKp2MUug5KTIGsmis=";
+    hash = "sha256-nA3Kpa1aaWA+9gIFvtuZP5IPT5eSbd0NtOAojLSYkmQ=";
   };
   nativeBuildInputs = [
     git # https://github.com/freqtrade/frequi/blob/7d8a81c1022fa39dffbcd69f45a01767259dd4de/vite.config.ts#L12

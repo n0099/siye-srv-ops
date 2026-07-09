@@ -13,6 +13,7 @@
   httpx,
   urllib3,
   jsonschema,
+  scipy,
   numpy,
   pandas,
   ta-lib,
@@ -53,12 +54,12 @@ let
 in
 buildPythonApplication (finalAttrs: {
   pname = "freqtrade";
-  version = "2026.5.1";
+  version = "2026.6";
   src = fetchFromGitHub {
     owner = "freqtrade";
     repo = "freqtrade";
     tag = finalAttrs.version;
-    hash = "sha256-j2yQ9gpNMrPPPrkgNclMpBs9uU2TD1Tf1eDKtrLlbGA=";
+    hash = "sha256-phxhnwijuvsPsRGsGxOp+RNLNBOIVXU3siBC+O9QJLg=";
   };
   pyproject = true;
   build-system = [
@@ -75,6 +76,7 @@ buildPythonApplication (finalAttrs: {
     httpx
     urllib3
     jsonschema
+    scipy
     numpy
     pandas
     ta-lib

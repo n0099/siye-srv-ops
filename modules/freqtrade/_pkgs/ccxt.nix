@@ -17,12 +17,12 @@
 
 buildPythonPackage (finalAttrs: {
   pname = "ccxt";
-  version = "4.5.59";
+  version = "4.5.64";
   src = fetchFromGitHub {
     owner = "ccxt";
     repo = "ccxt";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-YudOCr2EhFnHRacyeBzsjACxIGcNXwoHuCvw7M7oL0w=";
+    hash = "sha256-bL6gVB+jIF8Tn99yzXQtQgifFF4o7J8vRTn5B4jdIOI=";
   };
   pyproject = true;
   build-system = [ setuptools ];
