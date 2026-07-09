@@ -23,7 +23,17 @@
               { "/tbm" = "127.0.0.1:3001"; }
               { "/rc" = config.containers.email.localAddress; }
             ];
-          };
+          }
+          // (
+            let
+              host = config.containers.freqtrade.localAddress;
+            in
+            {
+              "ft-ws.n0099.com" = [ { "/" = "${host}:8080"; } ];
+              "ft1.n0099.com" = [ { "/" = "${host}:8081"; } ];
+              "ft2.n0099.com" = [ { "/" = "${host}:8082"; } ];
+            }
+          );
         }
         {
           virtualHosts =
@@ -117,6 +127,9 @@
                   ]
                 );
               }
+              (lib.genAttrs [ "ft-ws.n0099.com" "ft1.n0099.com" "ft2.n0099.com" ] (_: {
+                locations."/".proxyWebsockets = true; # https://www.freqtrade.io/en/stable/rest-api/#message-websocket
+              }))
             ];
         }
         {
