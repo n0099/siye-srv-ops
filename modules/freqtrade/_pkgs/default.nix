@@ -10,7 +10,7 @@
       rapidjson = prev.rapidjson.overrideAttrs { doCheck = false; }; # https://github.com/NixOS/nixpkgs/issues/451374
     })
     (final: prev: {
-      freqtrade = final.python3Packages.callPackage ./freqtrade.nix { };
+      freqtrade = final.callPackage ./freqtrade.nix { };
       pythonPackagesExtensions = prev.pythonPackagesExtensions ++ [
         (final: _: {
           ccxt = final.callPackage ./ccxt.nix { };
