@@ -39,7 +39,7 @@
                     age = {
                       identityPaths = [ hostPrivateKey ];
                       secrets.${secretName} = {
-                        file = ../../secrets/roundcube.db.password.age;
+                        file = ../../secrets/${secretName}.age;
                         symlink = false;
                         owner = "nginx";
                       };
