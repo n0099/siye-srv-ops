@@ -136,7 +136,14 @@
           }
           {
             settings.listen_addresses = "localhost, 172.17.0.1" |> lib.mkForce; # host.docker.internal
-            authentication = "host all all 172.16.0.0/12 scram-sha-256";
+            authentication = lib.mkForce ''
+              # require password when login from UNIX domain socket from a process like `psql -U<user>` with the same effective username `<user>` by disallow auth method `peer` that enabled in the default `pg_hba.conf`: https://github.com/NixOS/nixpkgs/blob/02e08985a27c65ffd33d434eeb2e660a2e4dc84d/nixos/modules/services/databases/postgresql.nix#L689
+              host  all all      172.16.0.0/12 scram-sha-256
+              local all postgres               peer map=postgres
+              local all all                    scram-sha-256
+              host  all all      127.0.0.1/32  scram-sha-256
+              host  all all      ::1/128       scram-sha-256
+            '';
           }
         ];
       };
