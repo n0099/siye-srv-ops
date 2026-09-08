@@ -141,4 +141,5 @@
         ];
       };
     };
+  flake.modules.homeManager.rdbms.home.file.".psqlrc".text = "\\timing on"; # https://dba.stackexchange.com/questions/156015/how-to-set-timing-on-permanently-in-postgresql/156016#156016
 }
