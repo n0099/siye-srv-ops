@@ -26,8 +26,5 @@
               autosnap = false;
             });
       }
-      {
-        n0099.stdenv.enable = true;
-      }
     ];
 }

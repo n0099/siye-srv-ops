@@ -1,10 +1,11 @@
 { lib, ... }:
 
 {
-  flake.modules.nixos.march = {
-    n0099.march = {
-      enable = true;
+  flake.modules.nixos.optimize = {
+    n0099.optimize = {
       arch = "znver5";
+      stdenv = true;
+      python = true;
     };
     nix.gc.automatic = false |> lib.mkForce;
     nixpkgs.overlays = [
