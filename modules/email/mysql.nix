@@ -82,19 +82,11 @@
                 lib.mkMerge [
                   (genDovecotPassDB lmtpArgsFilePath)
                   {
-                    services.dovecot2.package =
-                      (pkgs.dovecot_2_3.override {
-                        # https://github.com/NixOS/nixpkgs/blob/6b316287bae2ee04c9b93c8c858d930fd07d7338/pkgs/by-name/do/dovecot/generic.nix#L48-L52
-                        withMySQL = true;
-                        withSQLite = false;
-                      }).overrideAttrs
-                        (prev: {
-                          configureFlags = (prev.configureFlags or [ ]) ++ [
-                            # https://github.com/NixOS/nixpkgs/pull/529130
-                            "CFLAGS=-I${pkgs.libmysqlclient.dev}/include/mysql"
-                            "LDFLAGS=-L${pkgs.libmysqlclient}/lib/mysql"
-                          ];
-                        });
+                    services.dovecot2.package = pkgs.dovecot_2_3.override {
+                      # https://github.com/NixOS/nixpkgs/blob/6b316287bae2ee04c9b93c8c858d930fd07d7338/pkgs/by-name/do/dovecot/generic.nix#L48-L52
+                      withMySQL = true;
+                      withSQLite = false;
+                    };
                   }
                   {
                     services.dovecot2.settings.userdb = {
