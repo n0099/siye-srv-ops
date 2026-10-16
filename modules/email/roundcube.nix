@@ -73,7 +73,7 @@
                   {
                     index = "index.php";
                     extraConfig = ''
-                      add_header Cache-Control 'public, max-age=604800, must-revalidate';
+                      add_header Cache-Control 'max-age=604800, must-revalidate';
                     '';
                   }
                   {

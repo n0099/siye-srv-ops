@@ -68,8 +68,7 @@
                 locations = lib.genAttrs locations (_: { });
               };
               permanentRedirectTo = target: {
-                # https://stackoverflow.com/questions/42136829/whats-the-difference-between-http-301-and-308-status-codes
-                return = "308 ${target}";
+                return = "308 ${target}"; # https://stackoverflow.com/questions/42136829/whats-the-difference-between-http-301-and-308-status-codes
                 extraConfig = ''
                   # https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/http-3xx-status-codes.html
                   add_header Cache-Control max-age=${daysToSeconds 7};
@@ -148,16 +147,16 @@
               "/live2d/" = {
                 index = "index.js";
                 extraConfig = ''
-                  more_set_headers "Access-Control-Allow-Origin: https://z.n0099.net";
+                  more_set_headers 'Access-Control-Allow-Origin: https://z.n0099.net';
                 '';
               };
               "~ ^/live2d/.+/".extraConfig = ''
-                more_set_headers "Cache-Control: public, max-age=31536000, immutable";
+                add_header Cache-Control 'max-age=31536000, immutable';
               '';
             }
             {
               "/rc/".extraConfig = ''
-                more_set_headers "X-Frame-Options: SAMEORIGIN"; # https://github.com/roundcube/roundcubemail/issues/6882
+                more_set_headers 'X-Frame-Options: SAMEORIGIN'; # https://github.com/roundcube/roundcubemail/issues/6882
               '';
             }
           ];
