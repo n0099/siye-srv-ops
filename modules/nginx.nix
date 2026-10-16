@@ -10,30 +10,39 @@
     {
       services.nginx = lib.mkMerge [
         {
-          n0099.proxyPassByUrl = {
-            "z.n0099.net" = [ { "/" = "127.0.0.1:9002"; } ];
-            "simcity.moe" = [ { "/" = "127.0.0.1:9003"; } ];
-            "mcbar.club" = [ { "/" = "127.0.0.1:9004"; } ];
-            "n0099.net" = [ { "/v" = "127.0.0.1:9005"; } ];
-            "n0099.com" = [
-              { "/tc" = "127.0.0.1:9006"; }
-              { "/pma" = "127.0.0.1:9007"; }
-              { "/tbm/v1" = "127.0.0.1:9008"; }
-              { "/tbm/be" = "127.0.0.1:9009"; }
-              { "/tbm" = "127.0.0.1:3001"; }
-              { "/rc" = config.containers.email.localAddress; }
+          enable = true;
+          n0099 = {
+            noWWWDomains = [
+              "n0099.com"
+              "n0099.net"
+              "mcbar.club"
+              "simcity.moe"
             ];
-          }
-          // (
-            let
-              host = config.containers.freqtrade.localAddress;
-            in
-            {
-              "ft-ws.n0099.com" = [ { "/" = "${host}:8080"; } ];
-              "ft1.n0099.com" = [ { "/" = "${host}:8081"; } ];
-              "ft2.n0099.com" = [ { "/" = "${host}:8082"; } ];
+            proxyPassByUrl = {
+              "z.n0099.net" = [ { "/" = "127.0.0.1:9002"; } ];
+              "simcity.moe" = [ { "/" = "127.0.0.1:9003"; } ];
+              "mcbar.club" = [ { "/" = "127.0.0.1:9004"; } ];
+              "n0099.net" = [ { "/v" = "127.0.0.1:9005"; } ];
+              "n0099.com" = [
+                { "/tc" = "127.0.0.1:9006"; }
+                { "/pma" = "127.0.0.1:9007"; }
+                { "/tbm/v1" = "127.0.0.1:9008"; }
+                { "/tbm/be" = "127.0.0.1:9009"; }
+                { "/tbm" = "127.0.0.1:3001"; }
+                { "/rc" = config.containers.email.localAddress; }
+              ];
             }
-          );
+            // (
+              let
+                host = config.containers.freqtrade.localAddress;
+              in
+              {
+                "ft-ws.n0099.com" = [ { "/" = "${host}:8080"; } ];
+                "ft1.n0099.com" = [ { "/" = "${host}:8081"; } ];
+                "ft2.n0099.com" = [ { "/" = "${host}:8082"; } ];
+              }
+            );
+          };
         }
         {
           virtualHosts =
