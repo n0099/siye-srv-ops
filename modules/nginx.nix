@@ -11,6 +11,7 @@
       services.nginx = lib.mkMerge [
         {
           enable = true;
+          clientMaxBodySize = "16M"; # https://github.com/n0099/siye-srv-ops/commit/8b69f433adb3d7cdb5df2a3358583b432222f7db
           n0099 = {
             noWWWDomains = [
               "n0099.com"
