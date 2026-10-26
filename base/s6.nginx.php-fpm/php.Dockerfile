@@ -15,7 +15,6 @@ COPY ./base/s6.nginx.php-fpm/php/ /etc/php84/
 
 ARG PHP_INI
 COPY <<-INI /etc/php84/conf.d/03_Dockerfile_var.ini
-	[PHP]
 	$PHP_INI
 INI
 
