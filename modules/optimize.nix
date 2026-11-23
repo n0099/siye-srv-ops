@@ -15,7 +15,7 @@
           override =
             pkg:
             prev.${pkg}.overrideAttrs (prev: {
-              checkFlags = lib.map (
+              checkFlags = map (
                 flag:
                 if lib.hasPrefix "CI_SKIP_TESTS=" flag then
                   "${flag},"
