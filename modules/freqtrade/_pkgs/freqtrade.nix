@@ -5,16 +5,16 @@
 
 let
   frequi = python3Packages.callPackage ./frequi.nix { };
-  freqtrade-client = python3Packages.callPackage ./client.nix { };
+  freqtrade-client = python3Packages.callPackage ./freqtrade-client.nix { };
 in
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "freqtrade";
-  version = "2026.6";
+  version = "2026.10";
   src = fetchFromGitHub {
     owner = "freqtrade";
     repo = "freqtrade";
     tag = finalAttrs.version;
-    hash = "sha256-phxhnwijuvsPsRGsGxOp+RNLNBOIVXU3siBC+O9QJLg=";
+    hash = "sha256-APolLFb1GQ+vKsv8fuB91WANRRWftuWQfCZLGTwdacM=";
   };
   pyproject = true;
   build-system = with python3Packages; [
@@ -30,10 +30,13 @@ python3Packages.buildPythonApplication (finalAttrs: {
     requests
     httpx
     urllib3
+    certifi
     jsonschema
     scipy
     numpy
     pandas
+    bottleneck
+    numexpr
     ta-lib
     ft-pandas-ta
     technical
@@ -45,6 +48,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     questionary
     prompt-toolkit
     joblib
+    cloudpickle
     rich
     pyarrow
     fastapi

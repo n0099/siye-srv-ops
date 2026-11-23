@@ -2,25 +2,21 @@
   fetchFromGitHub,
   buildPythonPackage,
   setuptools,
-  wheel,
   ta-lib,
   pandas,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "technical";
-  version = "1.6.0";
+  version = "1.7.0";
   src = fetchFromGitHub {
     owner = "freqtrade";
     repo = "technical";
     tag = finalAttrs.version;
-    hash = "sha256-Xn5CfwgDhu+pPOkLGNLvfGwvGibw2Bp29zRFvtCbhC0=";
+    hash = "sha256-Ltab9QTiyH3lSCbHTi+MO2F6joMb1CJjQ6hCznCmP1w=";
   };
   pyproject = true;
-  build-system = [
-    setuptools
-    wheel
-  ];
+  build-system = [ setuptools ];
   dependencies = [
     ta-lib
     pandas

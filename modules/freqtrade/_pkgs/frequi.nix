@@ -5,30 +5,30 @@
   git,
   nodejs,
   dart-sass,
-  pnpm_11,
+  pnpm_12,
   pnpmConfigHook,
   fetchPnpmDeps,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "frequi";
-  version = "3.1.0";
+  version = "3.2.1";
   src = fetchFromGitHub {
     owner = "freqtrade";
     repo = "frequi";
     tag = finalAttrs.version;
-    hash = "sha256-Z8qG/N2Njy/Ya69y8rN7+V309HnoeHjn0yZqGXx2Sxw=";
+    hash = "sha256-Z3gW8+rPYM/THdS2jgo44xCW1XUIj5TDAEFqsa31mC4=";
   };
   pnpmDeps = fetchPnpmDeps {
     inherit (finalAttrs) pname version src;
-    pnpm = pnpm_11; # https://github.com/freqtrade/frequi/blob/7d8a81c1022fa39dffbcd69f45a01767259dd4de/package.json#L68
+    pnpm = pnpm_12; # https://github.com/freqtrade/frequi/blob/fc11114c1ba6d6d412137bc4f6f60c7ad7cd1ab7/package.json#L68
     fetcherVersion = 4;
-    hash = "sha256-nA3Kpa1aaWA+9gIFvtuZP5IPT5eSbd0NtOAojLSYkmQ=";
+    hash = "sha256-yQ2dsfGTdMeWLI+p+U7i7njGegYTVyhM2hIhIa9YeTA=";
   };
   nativeBuildInputs = [
     git # https://github.com/freqtrade/frequi/blob/7d8a81c1022fa39dffbcd69f45a01767259dd4de/vite.config.ts#L12
     nodejs
-    pnpm_11
+    pnpm_12
     pnpmConfigHook
   ];
   buildPhase = ''

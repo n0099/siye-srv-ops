@@ -4,44 +4,48 @@
   autoreconfHook,
   buildPythonPackage,
   setuptools,
-  wheel,
   cython,
   numpy,
-  build,
+  cmake,
 }:
 
+let
+  version = "0.8.3";
+  ta-lib = stdenv.mkDerivation (finalAttrs: {
+    # https://github.com/NixOS/nixpkgs/pull/533696
+    pname = "ta-lib";
+    inherit version;
+    src = fetchFromGitHub {
+      owner = "TA-Lib";
+      repo = "ta-lib";
+      tag = "v${finalAttrs.version}";
+      hash = "sha256-mctOWXfnrZT7G6BJhCNVy8KwwsjEkRyohZL0rnvoFIE=";
+    };
+    nativeBuildInputs = [ autoreconfHook ];
+  });
+in
 buildPythonPackage (finalAttrs: {
   pname = "ta-lib";
-  version = "0.6.8";
+  inherit version;
   src = fetchFromGitHub {
     owner = "TA-Lib";
     repo = "ta-lib-python";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-fgi/TkXb6UdjA8YohraW1Xn7aOLbNdt01SfCzyU0a2Y=";
+    hash = "sha256-zZeI1jMke5T32bwRfRUPZL7r9AgDzOsSnXX+SbmkGzQ=";
   };
   pyproject = true;
   build-system = [
     setuptools
-    wheel
     cython
     numpy
+    cmake
   ];
-  dependencies = [
-    build
-    numpy
-  ];
-  buildInputs = [
-    (stdenv.mkDerivation (finalAttrs: {
-      # https://github.com/NixOS/nixpkgs/pull/533696
-      pname = "ta-lib";
-      version = "0.6.4";
-      src = fetchFromGitHub {
-        owner = "TA-Lib";
-        repo = "ta-lib";
-        tag = "v${finalAttrs.version}";
-        hash = "sha256-aTRiScPNWsGDwJvumZXlMilvSDYZVDWgpeZ2F/S5WgQ=";
-      };
-      nativeBuildInputs = [ autoreconfHook ];
-    }))
-  ];
+  dependencies = [ numpy ];
+  dontConfigure = true; # use already built `ta-lib` to skip `cmake` https://github.com/TA-Lib/ta-lib-python/blob/b273aa93a97cd027c7b6dc26e50f689400e06667/setup.py#L129
+  env = {
+    # https://github.com/TA-Lib/ta-lib-python/pull/772
+    TA_INCLUDE_PATH = "${ta-lib}/include";
+    TA_LIBRARY_PATH = "${ta-lib}/lib";
+  };
+  buildInputs = [ ta-lib ];
 })

@@ -1,6 +1,5 @@
 {
   lib,
-  pythonAtLeast,
   pythonOlder,
   fetchFromGitHub,
   buildPythonPackage,
@@ -10,34 +9,63 @@
   cryptography,
   typing-extensions,
   aiohttp,
-  aiodns,
   yarl,
+  aiohttp-fast-zlib,
+  zlib-ng,
+  uvloop,
+  orjson,
   coincurve,
+  aiohappyeyeballs,
+  aiosignal,
+  attrs,
+  frozenlist,
+  multidict,
+  propcache,
+  cffi,
+  pycparser,
+  charset-normalizer,
+  idna,
+  urllib3,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "ccxt";
-  version = "4.5.64";
+  version = "4.5.92";
   src = fetchFromGitHub {
     owner = "ccxt";
     repo = "ccxt";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-bL6gVB+jIF8Tn99yzXQtQgifFF4o7J8vRTn5B4jdIOI=";
+    hash = "sha256-3sL6eIYrhMt7hk0IRRRPforDF7WwyKK6O+EZBp2OjqE=";
   };
   pyproject = true;
   build-system = [ setuptools ];
+  passthru = { inherit pinnedDeps; };
   dependencies = [
     setuptools
     certifi
     requests
     cryptography
     typing-extensions
-  ]
-  # https://github.com/ccxt/ccxt/blob/6712b7500c6dd888978047466d6ad9b49604d73b/python/setup.py#L89
-  ++ lib.optionals (pythonAtLeast "3.5.2") [
     aiohttp
-    aiodns
     yarl
+    aiohttp-fast-zlib
+    zlib-ng
+    uvloop
   ]
-  ++ lib.optional (pythonAtLeast "3.9" && pythonOlder "3.14") coincurve;
+  # https://github.com/ccxt/ccxt/blob/e6fd82900c9f2b71fa0fa7524d95dd788e2803fc/pyproject.toml#L68
+  ++ lib.optional (pythonOlder "3.15") orjson
+  ++ lib.optional (pythonOlder "3.14") coincurve
+  ++ [
+    aiohappyeyeballs
+    aiosignal
+    attrs
+    frozenlist
+    multidict
+    propcache
+    cffi
+    pycparser
+    charset-normalizer
+    idna
+    urllib3
+  ];
 })

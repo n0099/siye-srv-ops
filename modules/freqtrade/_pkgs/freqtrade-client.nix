@@ -9,12 +9,12 @@
 
 buildPythonPackage (finalAttrs: {
   pname = "freqtrade-client";
-  version = "2026.6";
+  version = "2026.10";
   src = fetchFromGitHub {
     owner = "freqtrade";
     repo = "freqtrade";
     tag = finalAttrs.version;
-    hash = "sha256-C63QcVdvHJTJSJYirIHVFeN5gMo9Hgta/NI5M1diF9U=";
+    hash = "sha256-L/iZC4kKsQjgKw3X3uK7ZeMsjsS/Y9miJfj5dy1jfWA=";
     rootDir = "ft_client";
   };
   pyproject = true;
