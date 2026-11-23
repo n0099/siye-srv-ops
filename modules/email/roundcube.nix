@@ -96,9 +96,6 @@
                 locations."${subBaseDir}/" = lib.mkMerge [
                   {
                     index = "index.php";
-                    extraConfig = ''
-                      add_header Cache-Control 'max-age=604800, must-revalidate';
-                    '';
                   }
                   {
                     # https://github.com/n0099/siye-srv-ops/blob/cad30264d6f80e5ab1e7adc1581309f75a1d81a4/base/s6.nginx.php-fpm/nginx/templates/sub-base-dir.conf
