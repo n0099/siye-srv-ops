@@ -1,33 +1,24 @@
 {
+  callPackage,
   lib,
   pythonOlder,
   fetchFromGitHub,
   buildPythonPackage,
-  setuptools,
-  certifi,
-  requests,
-  cryptography,
   typing-extensions,
-  aiohttp,
-  yarl,
-  aiohttp-fast-zlib,
   zlib-ng,
   uvloop,
-  orjson,
   coincurve,
-  aiohappyeyeballs,
   aiosignal,
   attrs,
   frozenlist,
-  multidict,
-  propcache,
   cffi,
   pycparser,
   charset-normalizer,
-  idna,
-  urllib3,
 }:
 
+let
+  pinnedDeps = callPackage ./ccxt-deps.nix { }; # https://github.com/NixOS/nixpkgs/blob/c7e10647eadb53b7cf3552a53e8bb33c8248c8c3/pkgs/by-name/README.md?plain=1#L187-L205
+in
 buildPythonPackage (finalAttrs: {
   pname = "ccxt";
   version = "4.5.92";
@@ -38,34 +29,34 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-3sL6eIYrhMt7hk0IRRRPforDF7WwyKK6O+EZBp2OjqE=";
   };
   pyproject = true;
-  build-system = [ setuptools ];
+  build-system = [ pinnedDeps.setuptools ];
   passthru = { inherit pinnedDeps; };
   dependencies = [
-    setuptools
-    certifi
-    requests
-    cryptography
+    pinnedDeps.setuptools
+    pinnedDeps.certifi
+    pinnedDeps.requests
+    pinnedDeps.cryptography
     typing-extensions
-    aiohttp
-    yarl
-    aiohttp-fast-zlib
+    pinnedDeps.aiohttp
+    pinnedDeps.yarl
+    pinnedDeps.aiohttp-fast-zlib
     zlib-ng
     uvloop
   ]
   # https://github.com/ccxt/ccxt/blob/e6fd82900c9f2b71fa0fa7524d95dd788e2803fc/pyproject.toml#L68
-  ++ lib.optional (pythonOlder "3.15") orjson
+  ++ lib.optional (pythonOlder "3.15") pinnedDeps.orjson
   ++ lib.optional (pythonOlder "3.14") coincurve
   ++ [
-    aiohappyeyeballs
+    pinnedDeps.aiohappyeyeballs
     aiosignal
     attrs
     frozenlist
-    multidict
-    propcache
+    pinnedDeps.multidict
+    pinnedDeps.propcache
     cffi
     pycparser
     charset-normalizer
-    idna
-    urllib3
+    pinnedDeps.idna
+    pinnedDeps.urllib3
   ];
 })
