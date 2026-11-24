@@ -6,6 +6,22 @@
 let
   frequi = python3Packages.callPackage ./frequi.nix { };
   freqtrade-client = python3Packages.callPackage ./freqtrade-client.nix { };
+  dedupedDeps =
+    with rec {
+      inherit (python3Packages)
+        ccxt
+        httpcore
+        starlette
+        ;
+      inherit (ccxt.pinnedDeps) certifi idna;
+    }; rec {
+      anyio = python3Packages.anyio.override { inherit idna; };
+      httpx = python3Packages.httpx.override {
+        inherit certifi idna anyio;
+        httpcore = httpcore.override { inherit certifi; };
+      };
+      fastapi = python3Packages.fastapi.override { starlette = starlette.override { inherit anyio; }; };
+    };
 in
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "freqtrade";
@@ -24,13 +40,13 @@ python3Packages.buildPythonApplication (finalAttrs: {
   dependencies = with python3Packages; [
     ccxt
     sqlalchemy
-    python-telegram-bot
+    (python-telegram-bot.override { inherit (dedupedDeps) httpx; })
     humanize
     cachetools
-    requests
-    httpx
-    urllib3
-    certifi
+    ccxt.pinnedDeps.requests
+    dedupedDeps.httpx
+    ccxt.pinnedDeps.urllib3
+    ccxt.pinnedDeps.certifi
     jsonschema
     scipy
     numpy
@@ -41,9 +57,9 @@ python3Packages.buildPythonApplication (finalAttrs: {
     ft-pandas-ta
     technical
     tabulate
-    pycoingecko
+    (pycoingecko.override { inherit (ccxt.pinnedDeps) requests; })
     python-rapidjson
-    orjson
+    ccxt.pinnedDeps.orjson
     jinja2
     questionary
     prompt-toolkit
@@ -51,7 +67,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     cloudpickle
     rich
     pyarrow
-    fastapi
+    dedupedDeps.fastapi
     pydantic
     pyjwt
     websockets
@@ -61,8 +77,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     janus
     ast-comments
     aiofiles
-    aiohttp
-    cryptography
+    ccxt.pinnedDeps.aiohttp
+    ccxt.pinnedDeps.cryptography
     sdnotify
     python-dateutil
     pytz

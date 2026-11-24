@@ -3,8 +3,8 @@
   buildPythonPackage,
   setuptools,
   wheel,
-  requests,
   python-rapidjson,
+  ccxt,
 }:
 
 buildPythonPackage (finalAttrs: {
@@ -23,7 +23,7 @@ buildPythonPackage (finalAttrs: {
     wheel
   ];
   dependencies = [
-    requests
+    ccxt.pinnedDeps.requests
     python-rapidjson
   ];
 })
