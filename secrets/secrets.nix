@@ -3,7 +3,9 @@ import ../base/secrets/genSecrets.nix [
   "dovecot.db.connect"
   "roundcube.db.password"
   "sanoid.upload.env"
-  "freqtrade.config"
-  "freqtrade.BTCETH.config"
-  "freqtrade.alt.config"
+  "freqtrade.global"
+  "freqtrade.webserver"
+  "freqtrade.spot"
+  "freqtrade.future-USDT"
+  "freqtrade.future-USDC"
 ]
