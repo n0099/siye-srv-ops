@@ -19,7 +19,7 @@
         (
           let
             getSecretPath = name: config.age.secrets."freqtrade.${name}".path;
-            botSecrets = lib.genAttrs [ "future" ] getSecretPath;
+            botSecrets = lib.genAttrs [ "spot" "future-USDT" "future-USDC" ] getSecretPath;
             secrets = botSecrets // (lib.genAttrs [ "global" "webserver" ] getSecretPath);
           in
           {
@@ -62,7 +62,7 @@
                   exchange.name = "binance";
                 };
                 webserver.settings = {
-                  exchange.pair_whitelist = [ ".*/USDT" ];
+                  exchange.pair_whitelist = [ ".*/USD(T|C)" ];
                   pairlists = [ { method = "StaticPairList"; } ];
                   recursive_strategy_search = true;
                 };
@@ -87,6 +87,7 @@
                           "${config.services.freqtrade.userDataDir}/strategies/NostalgiaForInfinity/configs/${filename}.json"
                         );
                     };
+                    mkSpot = token: mkBot token "spot";
                     mkFuture =
                       token: leverage:
                       lib.mkMerge [
@@ -108,7 +109,9 @@
                       ];
                   in
                   {
-                    future = mkFuture "USDT" 4;
+                    spot = mkSpot "USDC";
+                    future-USDT = mkFuture "USDT" 4;
+                    future-USDC = mkFuture "USDC" 5;
                   };
               };
             };
@@ -143,7 +146,9 @@
                   };
                 })
                 {
-                  future = 8082;
+                  spot = 8081;
+                  future-USDT = 8082;
+                  future-USDC = 8083;
                 }
             |> lib.mkMerge;
         }
