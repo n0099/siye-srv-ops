@@ -19,7 +19,7 @@
         (
           let
             getSecretPath = name: config.age.secrets."freqtrade.${name}".path;
-            botSecrets = lib.genAttrs [ "global" "BTCETH" "alt" ] getSecretPath;
+            botSecrets = lib.genAttrs [ "future" ] getSecretPath;
             secrets = botSecrets // (lib.genAttrs [ "global" "webserver" ] getSecretPath);
           in
           {
@@ -66,54 +66,49 @@
                   pairlists = [ { method = "StaticPairList"; } ];
                   recursive_strategy_search = true;
                 };
-                bot = {
-                  BTCETH = {
-                    settings = rec {
-                      strategy = "CombinedBinHAndClucVn0099";
-                      max_open_trades = exchange.pair_whitelist |> lib.splitString "|" |> lib.length;
-                      exchange.pair_whitelist = [
-                        # https://www.cryptometer.io/list/binance
-                        # https://www.coingecko.com/en/exchanges/binance
-                        # https://coinranking.com/exchange/-zdvbieRdZ+binance/markets
-                        "(BTC|ETH|SOL|HYPER|XRP|DOGE|AI|TRX|NEAR|PAXG|ENA|WLD|DOGE|TLM|ADA)/USDT"
-                      ];
-                      pairlists = [
-                        { method = "StaticPairList"; }
-                        /*
-                          {
-                            method = "VolumePairList";
-                            number_assets = 10;
-                            sort_key = "quoteVolume";
-                            lookback_days = 30;
-                            refresh_period = 86400;
+                bot =
+                  let
+                    mkBot = token: tradingMode: {
+                      settings = {
+                        strategy = "NostalgiaForInfinityX7";
+                        stake_currency = lib.toUpper token;
+                        max_open_trades = 100;
+                      };
+                      extraConfigFiles =
+                        [
+                          "trading_mode-${tradingMode}"
+                          "pairlist-volume-binance-${lib.toLower token}"
+                          "blacklist-binance"
+                          "exampleconfig"
+                        ]
+                        |> map (
+                          filename:
+                          "${config.services.freqtrade.userDataDir}/strategies/NostalgiaForInfinity/configs/${filename}.json"
+                        );
+                    };
+                    mkFuture =
+                      token: leverage:
+                      lib.mkMerge [
+                        (mkBot token "futures")
+                        {
+                          settings = {
+                            nfi_parameters = lib.genAttrs [
+                              # https://github.com/iterativv/NostalgiaForInfinity/blob/ded7f037654d308069b59a8dc580b6f30e4cde7e/docs/configuration-guide/configuration-guide.md?plain=1#L54
+                              "futures_mode_leverage"
+                              "futures_mode_leverage_rebuy_mode"
+                              "futures_mode_leverage_grind_mode"
+                            ] (_: leverage);
                           }
-                        */
+                          // lib.genAttrs [ "entry_pricing" "exit_pricing" ] (_: {
+                            # https://www.freqtrade.io/en/stable/exchanges/#binance-futures
+                            use_order_book = true;
+                          });
+                        }
                       ];
-                      exit_pricing = { };
-                      entry_pricing.price_side = "other";
-                    };
-                    extraConfigFiles = [
-                      "${config.services.freqtrade.userDataDir}/strategies/NostalgiaForInfinity/configs/blacklist-binance.json"
-                    ];
+                  in
+                  {
+                    future = mkFuture "USDT" 4;
                   };
-                  alt = {
-                    settings = {
-                      strategy = "NostalgiaForInfinityX7";
-                      max_open_trades = 100;
-                    };
-                    extraConfigFiles =
-                      [
-                        "trading_mode-spot"
-                        "pairlist-volume-binance-usdt"
-                        "blacklist-binance"
-                        "exampleconfig"
-                      ]
-                      |> map (
-                        filename:
-                        "${config.services.freqtrade.userDataDir}/strategies/NostalgiaForInfinity/configs/${filename}.json"
-                      );
-                  };
-                };
               };
             };
         }
@@ -147,8 +142,7 @@
                   };
                 })
                 {
-                  BTCETH = 8081;
-                  alt = 8082;
+                  future = 8082;
                 }
             |> lib.mkMerge;
         }
