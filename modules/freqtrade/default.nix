@@ -71,7 +71,7 @@
                     mkBot = token: tradingMode: {
                       settings = {
                         dry_run = false;
-                        strategy = "NostalgiaForInfinityX7";
+                        strategy = "NostalgiaForInfinityX8";
                         stake_currency = lib.toUpper token;
                         max_open_trades = 100;
                       };
