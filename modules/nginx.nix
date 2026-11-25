@@ -34,14 +34,27 @@
               };
             }
             // (
+              with { inherit (import ../base/toBeFilled/lib.nix lib) readString; };
               let
-                host = config.containers.freqtrade.localAddress;
+                container = config.containers.freqtrade;
+                host = container.localAddress;
+                cfg = container.config.services.freqtrade;
+                placeholderPath = ../toBeFilled/freqtrade;
+                webserverPort = lib.optionalAttrs (cfg.webserver.enable) {
+                  ${placeholderPath + /webserver/domain |> readString}."/" =
+                    "${host}:${toString cfg.webserver.listen.port}";
+                };
+                botPorts =
+                  cfg.bot
+                  |> lib.filterAttrs (_: config: config.settings ? api_server.listen_port)
+                  |> lib.concatMapAttrs (
+                    name: config: {
+                      ${placeholderPath + /bot/${name}/domain |> readString}."/" =
+                        "${host}:${toString config.settings.api_server.listen_port}";
+                    }
+                  );
               in
-              {
-                "ft-ws.n0099.com"."/" = "${host}:8080";
-                "ft1.n0099.com"."/" = "${host}:8081";
-                "ft2.n0099.com"."/" = "${host}:8082";
-              }
+              webserverPort // botPorts
             );
           };
         }
