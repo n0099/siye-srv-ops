@@ -18,22 +18,18 @@
         }
         (
           let
-            global = config.age.secrets."freqtrade.config".path;
-            BTCETH = config.age.secrets."freqtrade.BTCETH.config".path;
-            alt = config.age.secrets."freqtrade.alt.config".path;
+            getSecretPath = name: config.age.secrets."freqtrade.${name}".path;
+            botSecrets = lib.genAttrs [ "global" "BTCETH" "alt" ] getSecretPath;
+            secrets = botSecrets // (lib.genAttrs [ "global" "webserver" ] getSecretPath);
           in
           {
-            bindMounts = {
-              ${global}.isReadOnly = true;
-              ${BTCETH}.isReadOnly = true;
-              ${alt}.isReadOnly = true;
-            };
+            bindMounts = lib.genAttrs (lib.attrValues secrets) (_: {
+              isReadOnly = true;
+            });
             config.services.freqtrade = {
-              extraConfigFiles = [ global ];
-              bot = {
-                BTCETH.extraConfigFiles = [ BTCETH ];
-                alt.extraConfigFiles = [ alt ];
-              };
+              extraConfigFiles = [ secrets.global ];
+              webserver.extraConfigFiles = [ secrets.webserver ];
+              bot = lib.mapAttrs (_: secret: { extraConfigFiles = [ secret ]; }) botSecrets;
             };
           }
         )
