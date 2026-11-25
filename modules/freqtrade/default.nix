@@ -54,7 +54,7 @@
               services.freqtrade = {
                 enable = true;
                 settings = {
-                  dry_run = false;
+                  dry_run = true;
                   dry_run_wallet = 100;
                   initial_state = "running";
                   stake_amount = "unlimited";
@@ -70,6 +70,7 @@
                   let
                     mkBot = token: tradingMode: {
                       settings = {
+                        dry_run = false;
                         strategy = "NostalgiaForInfinityX7";
                         stake_currency = lib.toUpper token;
                         max_open_trades = 100;
