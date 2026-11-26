@@ -6,7 +6,6 @@
   setuptools,
   cython,
   numpy,
-  cmake,
 }:
 
 let
@@ -38,10 +37,12 @@ buildPythonPackage (finalAttrs: {
     setuptools
     cython
     numpy
-    cmake
   ];
   dependencies = [ numpy ];
-  dontConfigure = true; # use already built `ta-lib` to skip `cmake` https://github.com/TA-Lib/ta-lib-python/blob/b273aa93a97cd027c7b6dc26e50f689400e06667/setup.py#L129
+  postPatch = ''
+    substituteInPlace pyproject.toml --replace-fail ', "cmake"]' ']'
+  '';
+  dontConfigure = true; # use already built `ta-lib` to remove `cmake`: https://github.com/TA-Lib/ta-lib-python/blob/b273aa93a97cd027c7b6dc26e50f689400e06667/setup.py#L129
   env = {
     # https://github.com/TA-Lib/ta-lib-python/pull/772
     TA_INCLUDE_PATH = "${ta-lib}/include";
