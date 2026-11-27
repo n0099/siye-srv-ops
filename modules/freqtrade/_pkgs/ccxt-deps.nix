@@ -1,13 +1,16 @@
 {
   fetchFromGitHub,
-  rustPlatform,
   setuptools,
   certifi,
+  requests,
   cryptography,
+  rustPlatform,
   aiohttp,
+  yarl,
   aiodns,
   pycares,
   pytest-timeout,
+  aiohttp-fast-zlib,
   orjson,
   aiohappyeyeballs,
   multidict,
@@ -15,12 +18,10 @@
   propcache,
   idna,
   urllib3,
-  aiohttp-fast-zlib,
-  yarl,
-  requests,
 }:
 
 # https://github.com/ccxt/ccxt/pull/29093
+# rerun `nix why-depends --derivation .#python3Packages.{ccxt,<drv>}` until no match
 # TODO: re-check versions when upgrade to a new NixOS branch
 # diff `python3*Packages.*` in the nixpkgs repo:
 # $ git diff $remote/nixos-{$current_branch,unstable} -- pkgs/development/python-modules/$package/default.nix
@@ -81,6 +82,11 @@ let
           nativeCheckInputs = prev.nativeCheckInputs ++ [ pytest-timeout ];
         }
       );
+  yarl' = yarl.override {
+    multidict = multidict';
+    propcache = propcache';
+    idna = idna';
+  };
   aiohappyeyeballs' = aiohappyeyeballs.overridePythonAttrs rec {
     # https://github.com/NixOS/nixpkgs/pull/541370/changes/e84a374a8fa5cf8dfdf2604d40c02df7a808956f
     version = "2.7.1";
@@ -126,11 +132,6 @@ let
           hash = "sha256-vn6FSdWEMk6c8Cu1mHyhZyH8ZlFK0kgYK8T7GKLHHwc=";
         };
       };
-  yarl' = yarl.override {
-    multidict = multidict';
-    propcache = propcache';
-    idna = idna';
-  };
   idna' = idna.overridePythonAttrs rec {
     # https://github.com/NixOS/nixpkgs/pull/531987/changes/71bf5cc8cb35b23e1bc393533a5177898fabbfbd
     version = "3.18";
@@ -163,12 +164,21 @@ in
       hash = "sha256-Gn2gH2LnsgeX1MvDRBbnFnI6WjkjBFItU4SelowkjBc=";
     };
   };
+  certifi = certifi';
+  requests = requests.override {
+    idna = idna';
+    urllib3 = urllib3';
+    certifi = certifi';
+  };
   cryptography = cryptography'.override {
     # not using https://github.com/NixOS/nixpkgs/issues/370936#issuecomment-6699941196 to prevent infinite recursion that caused by self-referencing
     cryptography-vectors = cryptography'.passthru.vectors.override {
       cryptography = cryptography'; # https://github.com/NixOS/nixpkgs/blob/fad2a962a45b31cd5de6312714887cff58883cd2/pkgs/development/python-modules/cryptography/vectors.nix
     };
   };
+  aiohttp = aiohttp';
+  yarl = yarl';
+  aiohttp-fast-zlib = aiohttp-fast-zlib.override { aiohttp = aiohttp'; };
   orjson = orjson.overridePythonAttrs (
     final: _: {
       # https://github.com/NixOS/nixpkgs/pull/554025/changes/590081bb908d045d10057ea41881f6b90cbbb8ec
@@ -185,18 +195,9 @@ in
       };
     }
   );
-  certifi = certifi';
-  aiohttp = aiohttp';
-  idna = idna';
-  urllib3 = urllib3';
-  aiohttp-fast-zlib = aiohttp-fast-zlib.override { aiohttp = aiohttp'; };
   aiohappyeyeballs = aiohappyeyeballs';
-  yarl = yarl';
   multidict = multidict';
   propcache = propcache';
-  requests = requests.override {
-    idna = idna';
-    urllib3 = urllib3';
-    certifi = certifi';
-  };
+  idna = idna';
+  urllib3 = urllib3';
 }
