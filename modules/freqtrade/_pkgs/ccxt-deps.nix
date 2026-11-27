@@ -26,7 +26,7 @@
 # $ git diff $remote/nixos-{$current_branch,unstable} -- pkgs/development/python-modules/$package/default.nix
 let
   certifi' = certifi.overridePythonAttrs rec {
-    # https://github.com/NixOS/nixpkgs/commit/f64b15a4f03d3c7715f713934fd91d3d776daa75
+    # https://github.com/NixOS/nixpkgs/pull/554025/changes/f64b15a4f03d3c7715f713934fd91d3d776daa75
     version = "2026.07.22";
     src = fetchFromGitHub {
       owner = "certifi";
@@ -50,7 +50,7 @@ let
         hash = "sha256-OUfcs3MIoEwUx1BQV1ZYnAx9IDEbQUWEaeddwK0LLmQ=";
       };
       # https://github.com/NixOS/nixpkgs/pull/549356
-      # https://github.com/NixOS/nixpkgs/commit/b40d316f4d9d927f31f0e5ffe8bece7858490255
+      # https://github.com/NixOS/nixpkgs/pull/569137/changes/b40d316f4d9d927f31f0e5ffe8bece7858490255
       patches = [ ];
     }
   );
@@ -82,7 +82,7 @@ let
         }
       );
   aiohappyeyeballs' = aiohappyeyeballs.overridePythonAttrs rec {
-    # https://github.com/NixOS/nixpkgs/commit/e84a374a8fa5cf8dfdf2604d40c02df7a808956f
+    # https://github.com/NixOS/nixpkgs/pull/541370/changes/e84a374a8fa5cf8dfdf2604d40c02df7a808956f
     version = "2.7.1";
     src = fetchFromGitHub {
       owner = "bdraco";
@@ -117,7 +117,7 @@ let
       };
     }).overridePythonAttrs
       rec {
-        # https://github.com/NixOS/nixpkgs/commit/299bfeb14d0ef2bc80150375195cd176bdc66da6
+        # https://github.com/NixOS/nixpkgs/pull/527386/changes/299bfeb14d0ef2bc80150375195cd176bdc66da6
         version = "0.5.2";
         src = fetchFromGitHub {
           owner = "aio-libs";
@@ -132,7 +132,7 @@ let
     idna = idna';
   };
   idna' = idna.overridePythonAttrs rec {
-    # https://github.com/NixOS/nixpkgs/commit/71bf5cc8cb35b23e1bc393533a5177898fabbfbd
+    # https://github.com/NixOS/nixpkgs/pull/531987/changes/71bf5cc8cb35b23e1bc393533a5177898fabbfbd
     version = "3.18";
     src = fetchFromGitHub {
       owner = "kjd";
@@ -154,7 +154,7 @@ let
 in
 {
   setuptools = setuptools.overridePythonAttrs rec {
-    # https://github.com/NixOS/nixpkgs/commit/31b1ff3caa7f39e44d501a129652a8703ab0bb80
+    # https://github.com/NixOS/nixpkgs/pull/541370/changes/31b1ff3caa7f39e44d501a129652a8703ab0bb80
     version = "83.0.0";
     src = fetchFromGitHub {
       owner = "pypa";
@@ -171,7 +171,7 @@ in
   };
   orjson = orjson.overridePythonAttrs (
     final: _: {
-      # https://github.com/NixOS/nixpkgs/commit/590081bb908d045d10057ea41881f6b90cbbb8ec
+      # https://github.com/NixOS/nixpkgs/pull/554025/changes/590081bb908d045d10057ea41881f6b90cbbb8ec
       version = "3.12.0";
       src = fetchFromGitHub {
         owner = "ijl";
