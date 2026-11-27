@@ -185,6 +185,7 @@ in
           Type = "exec";
           Restart = "on-failure";
           SyslogIdentifier = "freqtrade-${id}";
+          SuccessExitStatus = 130; # https://github.com/freqtrade/freqtrade/blob/f3ec9796fbfa333625be451fd8c03e0dad8869b7/freqtrade/main.py#L66
         };
       };
     in
